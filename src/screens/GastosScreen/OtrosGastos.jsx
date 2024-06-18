@@ -38,7 +38,6 @@ const OtrosGastos = () => {
               <Typography variant="h6">{gasto.tipoGasto}</Typography>
               <Typography variant="body1">{gasto.descripcion}</Typography>
               <Typography variant="body1">Monto: {gasto.monto.toLocaleString('es-CO', { style: 'currency', currency: 'COP' })}</Typography>
-              <Typography variant="body1">Frecuencia: {gasto.frecuencia}</Typography>
             </Box>
           </Grid>
         ))}

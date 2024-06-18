@@ -4,6 +4,7 @@ import {
   Container, Typography, CircularProgress, Card, CardHeader, CardContent, CardActions, Collapse, IconButton, Box, Grid, Divider, Button, Select, MenuItem, FormControl, InputLabel
 } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import DeleteIcon from '@mui/icons-material/Delete';
 import { styled } from '@mui/material/styles';
 import KPICard from './components/KPICard';
 import dayjs from 'dayjs';
@@ -78,6 +79,15 @@ function GastosProveedores() {
     }
   };
 
+  const handleDeletePedido = async (pedidoId) => {
+    try {
+      await axios.delete(`${apiBaseUrl}/pedidos_proveedores/${pedidoId}`);
+      setPedidos((prevPedidos) => prevPedidos.filter((pedido) => pedido.id !== pedidoId));
+    } catch (error) {
+      console.error('Error al eliminar el pedido', error);
+    }
+  };
+
   const handleMonthChange = (event) => {
     setSelectedMonth(event.target.value);
   };
@@ -136,6 +146,11 @@ function GastosProveedores() {
                 <CardHeader
                   title={`Pedido ID: ${pedido.id}`}
                   subheader={`Total: ${formatCurrency(pedido.total_costo)}`}
+                  action={
+                    <IconButton onClick={() => handleDeletePedido(pedido.id)}>
+                      <DeleteIcon />
+                    </IconButton>
+                  }
                 />
                 <CardContent>
                   <Typography variant="body2" color="textSecondary">

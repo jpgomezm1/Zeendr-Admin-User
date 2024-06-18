@@ -56,20 +56,6 @@ const AddGastoDialog = ({ open, handleClose, handleSaveGasto }) => {
           onChange={(e) => setMonto(e.target.value)}
           sx={{ mb: 3, '& .MuiInputBase-root': { borderRadius: '8px' } }}
         />
-        <TextField
-          margin="dense"
-          label="Frecuencia"
-          type="text"
-          fullWidth
-          value={frecuencia}
-          onChange={(e) => setFrecuencia(e.target.value)}
-          select
-          sx={{ mb: 3, '& .MuiInputBase-root': { borderRadius: '8px' } }}
-        >
-          <MenuItem value="Mensual">Mensual</MenuItem>
-          <MenuItem value="Anual">Anual</MenuItem>
-          <MenuItem value="Único">Único</MenuItem>
-        </TextField>
       </DialogContent>
       <DialogActions>
         <Button onClick={handleClose} sx={{ color: '#5E55FE', borderRadius: '8px' }}>Cancelar</Button>
@@ -80,3 +66,5 @@ const AddGastoDialog = ({ open, handleClose, handleSaveGasto }) => {
 };
 
 export default AddGastoDialog;
+
+
