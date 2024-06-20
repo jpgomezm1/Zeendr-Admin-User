@@ -18,7 +18,10 @@ const DataScreen = () => {
       try {
         const ordersResponse = await axios.get(`${apiBaseUrl}/pedidos`);
         console.log('Orders data:', ordersResponse.data); // <-- Verificar los datos aquí
-        setOrders(ordersResponse.data);
+        const filteredOrders = ordersResponse.data.filter(order => 
+          order.estado === 'Pedido Confirmado' || order.estado === 'Pedido Recibido'
+        );
+        setOrders(filteredOrders);
       } catch (error) {
         console.error('Error fetching orders:', error);
       } finally {

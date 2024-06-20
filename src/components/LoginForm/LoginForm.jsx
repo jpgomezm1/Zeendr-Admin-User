@@ -108,22 +108,6 @@ const LoginForm = () => {
                 >
                     Iniciar sesión
                 </Button>
-                <Button
-                    type="button"
-                    variant="text"
-                    sx={{
-                        color: 'black',
-                        fontFamily: 'Poppins',
-                        textTransform: 'none',
-                        fontSize: '15px',
-                        marginTop: '10px',
-                    }}
-                    onClick={() => {
-                        console.log("Redirigir a recuperación de contraseña");
-                    }}
-                >
-                    ¿Olvidaste tu contraseña?
-                </Button>
             </Box>
             <Snackbar open={snackbarOpen} autoHideDuration={6000} onClose={handleCloseSnackbar}>
                 <Alert onClose={handleCloseSnackbar} severity="error" sx={{ width: '100%' }}>
