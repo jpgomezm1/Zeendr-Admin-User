@@ -102,7 +102,11 @@ const DeliveryScreen = () => {
 
   const filteredOrders = selectedDate === 'Todas'
     ? orders
-    : orders.filter((order) => order.fecha_hora.startsWith(selectedDate));
+    : orders.filter((order) => {
+        const orderDate = order.fecha_hora.split(' ')[0];
+        const deliveryDate = order.fecha_entrega || orderDate;
+        return selectedDate === orderDate || selectedDate === deliveryDate;
+      });
 
   const transformOrders = filteredOrders
     .sort((a, b) => new Date(a.fecha_hora) - new Date(b.fecha_hora))
@@ -120,6 +124,8 @@ const DeliveryScreen = () => {
         numero_telefono: order.numero_telefono,
         direccion: order.direccion,
         fecha: order.fecha_hora,
+        fecha_entrega: order.fecha_entrega,
+        rango_horas: order.rango_horas,
         productos: productosDescripcion,
         productosDetalles: productos,
         metodo_pago: order.metodo_pago,
@@ -138,7 +144,15 @@ const DeliveryScreen = () => {
   const totalDomicilios = summaryOrders.reduce((sum, order) => sum + order.total_domicilio, 0);
   const numeroPedidos = summaryOrders.length;
 
-  const uniqueDates = ['Todas', ...[...new Set(orders.map((order) => order.fecha_hora.split(' ')[0]))].sort((a, b) => new Date(a) - new Date(b))];
+  const uniqueDates = ['Todas', ...new Set(
+    orders.flatMap((order) => {
+      const dates = [order.fecha_hora.split(' ')[0]];
+      if (order.fecha_entrega && order.fecha_entrega !== 'No programada') {
+        dates.push(order.fecha_entrega);
+      }
+      return dates;
+    }).sort((a, b) => new Date(a) - new Date(b))
+  )];
 
   const handleOpenAddOrderDialog = () => {
     setOpenAddOrderDialog(true);

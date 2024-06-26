@@ -52,6 +52,8 @@ const OrderTable = ({ orders, onOpenComprobanteDialog, onEstadoChange, onOpenPro
                 <StyledTableCell>Teléfono</StyledTableCell>
                 <StyledTableCell>Dirección</StyledTableCell>
                 <StyledTableCell>Fecha</StyledTableCell>
+                <StyledTableCell>Fecha Entrega</StyledTableCell>
+                <StyledTableCell>Rango Horas</StyledTableCell>
                 <StyledTableCell>$ Productos</StyledTableCell>
                 <StyledTableCell>$ Domicilio</StyledTableCell>
                 <StyledTableCell>$ Total</StyledTableCell>
@@ -71,6 +73,8 @@ const OrderTable = ({ orders, onOpenComprobanteDialog, onEstadoChange, onOpenPro
                   <TableCell>{row.numero_telefono}</TableCell>
                   <TableCell>{row.direccion}</TableCell>
                   <TableCell>{row.fecha}</TableCell>
+                  <TableCell>{row.fecha_entrega || 'No programada'}</TableCell>
+                  <TableCell>{row.rango_horas || 'No programado'}</TableCell>
                   <TableCell>{formatCurrency(row.total)}</TableCell>
                   <TableCell>{formatCurrency(row.total_domicilio)}</TableCell>
                   <TableCell>{formatCurrency(row.total_venta)}</TableCell>
@@ -94,5 +98,3 @@ const OrderTable = ({ orders, onOpenComprobanteDialog, onEstadoChange, onOpenPro
 };
 
 export default OrderTable;
-
-
