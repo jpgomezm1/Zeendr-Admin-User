@@ -58,7 +58,7 @@ const NewProductCostDialogComponent = ({
             costPerUnit = insumoData.precio / (insumoData.cantidad * 1000); // Precio por gramo
             totalCost += costPerUnit * parseFloat(insumo.cantidad || 0);
             break;
-          case 'kg':
+          case 'Kg':
             costPerUnit = insumoData.precio / insumoData.cantidad; // Precio por kilogramo
             totalCost += costPerUnit * parseFloat(insumo.cantidad || 0);
             break;
@@ -66,11 +66,11 @@ const NewProductCostDialogComponent = ({
             costPerUnit = insumoData.precio / (insumoData.cantidad * 1000); // Precio por mililitro
             totalCost += costPerUnit * parseFloat(insumo.cantidad || 0);
             break;
-          case 'l':
+          case 'L':
             costPerUnit = insumoData.precio / insumoData.cantidad; // Precio por litro
             totalCost += costPerUnit * parseFloat(insumo.cantidad || 0);
             break;
-          case 'unidades':
+          case 'Unidades':
             costPerUnit = insumoData.precio / insumoData.cantidad; // Precio por unidad
             totalCost += costPerUnit * parseFloat(insumo.cantidad || 0);
             break;
@@ -80,7 +80,7 @@ const NewProductCostDialogComponent = ({
       }
     });
     const costPerUnit = totalCost / unidadesProducidas;
-    const calculatedPrice = costPerUnit + (costPerUnit * (margen / 100));
+    const calculatedPrice = costPerUnit / (1 - (margen / 100));
     setCosto(formatCurrency(costPerUnit));
     setPrecioVenta(formatCurrency(calculatedPrice));
   };
@@ -198,7 +198,7 @@ const NewProductCostDialogComponent = ({
             />
             <FormControl sx={{ flex: 1 }}>
               <Autocomplete
-                options={['g', 'kg', 'ml', 'l', 'unidades']}
+                options={['g', 'Kg', 'ml', 'L', 'Unidades']}
                 getOptionLabel={(option) => option}
                 value={insumo.unidad || ''}
                 onChange={(e, newValue) => handleInsumoChange(index, 'unidad', newValue || '')}
@@ -227,4 +227,3 @@ const NewProductCostDialogComponent = ({
 };
 
 export default NewProductCostDialogComponent;
-

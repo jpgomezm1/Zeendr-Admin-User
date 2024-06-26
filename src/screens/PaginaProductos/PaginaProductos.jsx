@@ -8,7 +8,7 @@ import ProductoDialog from '../../components/ProductDialog/ProductDialog';
 function PaginaProductos() {
     const [open, setOpen] = useState(false);
     const [productos, setProductos] = useState([]);
-    const [nuevoProducto, setNuevoProducto] = useState({ nombre: '', precio: '', imagen: null, categoria: '', descripcion: '' });
+    const [nuevoProducto, setNuevoProducto] = useState({ nombre: '', precio: '', imagen: null, categoria: '', descripcion: '', descuento: 0 });
     const [editMode, setEditMode] = useState(false);
     const [productoId, setProductoId] = useState(null);
     const [loading, setLoading] = useState(false);
@@ -37,6 +37,7 @@ function PaginaProductos() {
         formData.append('precio', nuevoProducto.precio);
         formData.append('categoria', nuevoProducto.categoria);
         formData.append('descripcion', nuevoProducto.descripcion || '');
+        formData.append('descuento', nuevoProducto.descuento);  // Añadir descuento
         if (nuevoProducto.imagen) {
             formData.append('imagen', nuevoProducto.file);
         }
@@ -61,7 +62,14 @@ function PaginaProductos() {
     };
 
     const handleEdit = producto => {
-        setNuevoProducto({ ...producto, imagen: null });
+        setNuevoProducto({
+            nombre: producto.nombre,
+            precio: producto.precio,
+            categoria: producto.categoria,
+            descripcion: producto.descripcion,
+            descuento: producto.descuento,  // Asegúrate de incluir el descuento
+            imagen: null
+        });
         setProductoId(producto.id);
         setEditMode(true);
         setOpen(true);
@@ -85,7 +93,7 @@ function PaginaProductos() {
     const handleClose = () => {
         setOpen(false);
         setEditMode(false);
-        setNuevoProducto({ nombre: '', precio: '', imagen: null, categoria: '', descripcion: '' });
+        setNuevoProducto({ nombre: '', precio: '', imagen: null, categoria: '', descripcion: '', descuento: 0 });
     };
 
     const handleChange = (e) => {
@@ -127,3 +135,4 @@ function PaginaProductos() {
 }
 
 export default PaginaProductos;
+

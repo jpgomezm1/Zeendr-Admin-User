@@ -4,6 +4,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import { red } from '@mui/material/colors';
 import { ProductCard, ProductMedia } from '../../styles/styledComponents';
+import LocalOfferIcon from '@mui/icons-material/LocalOffer';
 
 function ProductoCard({ producto, onDelete, onEdit }) {
   const formatCurrency = (value) => {
@@ -15,9 +16,16 @@ function ProductoCard({ producto, onDelete, onEdit }) {
     }).format(value);
   };
 
+  const discountedPrice = producto.precio * (1 - producto.descuento / 100);
+
   return (
     <Grid item xs={12} sm={6} md={4}>
       <ProductCard>
+        {producto.descuento > 0 && (
+          <div style={{ position: 'absolute', top: '10px', left: '10px', backgroundColor: 'red', color: 'white', padding: '5px', borderRadius: '5px' }}>
+            <LocalOfferIcon /> {producto.descuento}%
+          </div>
+        )}
         <ProductMedia
           component="img"
           alt="Imagen del producto"
@@ -28,9 +36,20 @@ function ProductoCard({ producto, onDelete, onEdit }) {
           <Typography gutterBottom variant="h5" component="div" sx={{ fontWeight: 'medium' }}>
             {producto.nombre}
           </Typography>
-          <Typography variant="body1" color="text.secondary" sx={{ fontSize: '1.2rem' }}>
-            Precio: {formatCurrency(producto.precio)}
-          </Typography>
+          {producto.descuento > 0 ? (
+            <>
+              <Typography variant="body1" color="text.secondary" sx={{ fontSize: '1.2rem', textDecoration: 'line-through' }}>
+                Precio: {formatCurrency(producto.precio)}
+              </Typography>
+              <Typography variant="body1" color="text.secondary" sx={{ fontSize: '1.2rem' }}>
+                Precio con descuento: {formatCurrency(discountedPrice)}
+              </Typography>
+            </>
+          ) : (
+            <Typography variant="body1" color="text.secondary" sx={{ fontSize: '1.2rem' }}>
+              Precio: {formatCurrency(producto.precio)}
+            </Typography>
+          )}
           <Typography variant="body2" color="text.secondary" sx={{ marginBottom: 2 }}>
             Categoría: {producto.categoria}
           </Typography>

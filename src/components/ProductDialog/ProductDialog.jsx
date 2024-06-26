@@ -53,6 +53,17 @@ function ProductoDialog({ open, handleClose, handleChange, handleAddProducto, nu
         />
         <TextField
           margin="dense"
+          id="descuento"
+          label="Descuento (%)"
+          type="number"
+          fullWidth
+          variant="outlined"
+          name="descuento"
+          value={nuevoProducto.descuento}
+          onChange={handleChange}
+        />
+        <TextField
+          margin="dense"
           id="descripcion"
           label="Descripción del Producto"
           type="text"
@@ -118,3 +129,5 @@ function ProductoDialog({ open, handleClose, handleChange, handleAddProducto, nu
 }
 
 export default ProductoDialog;
+
+
