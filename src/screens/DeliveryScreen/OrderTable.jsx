@@ -1,5 +1,5 @@
 import React from 'react';
-import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Checkbox, Paper, Box } from '@mui/material';
+import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Box } from '@mui/material';
 import { styled } from '@mui/system';
 import PaymentMethodCell from './PaymentMethodCell';
 import EstadoCell from './EstadoCell';
@@ -44,10 +44,6 @@ const OrderTable = ({ orders, onOpenComprobanteDialog, onEstadoChange, onOpenPro
           <Table>
             <TableHead>
               <TableRow>
-                <StyledTableCell padding="checkbox">
-                  <Checkbox color="primary" />
-                </StyledTableCell>
-                <StyledTableCell>ID</StyledTableCell>
                 <StyledTableCell>Nombre</StyledTableCell>
                 <StyledTableCell>Teléfono</StyledTableCell>
                 <StyledTableCell>Dirección</StyledTableCell>
@@ -65,10 +61,6 @@ const OrderTable = ({ orders, onOpenComprobanteDialog, onEstadoChange, onOpenPro
             <TableBody>
               {orders.map((row) => (
                 <TableRow key={row.id} className={getRowClassName(row.estado)}>
-                  <TableCell padding="checkbox">
-                    <Checkbox color="primary" />
-                  </TableCell>
-                  <TableCell>{row.id}</TableCell>
                   <TableCell>{row.nombre_completo}</TableCell>
                   <TableCell>{row.numero_telefono}</TableCell>
                   <TableCell>{row.direccion}</TableCell>

@@ -81,7 +81,7 @@ const Navbar = () => {
           </Link>
           <List>
             {[
-              { to: "/orders", icon: <DeliveryDiningIcon />, text: "Domicilios" },
+              { to: "/orders", icon: <DeliveryDiningIcon />, text: "Ordenes" },
               { to: "/products", icon: <AddShoppingCartIcon />, text: "Productos" },
               { to: "/stock", icon: <FastfoodIcon />, text: "Stock de Productos" },
               { to: "/clients", icon: <EmojiPeopleIcon />, text: "Clientes" },
