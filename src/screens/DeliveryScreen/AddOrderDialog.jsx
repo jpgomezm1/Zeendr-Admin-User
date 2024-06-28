@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField, FormControl, InputLabel, Select, MenuItem, IconButton, Box, Stack, Grid, Checkbox, FormControlLabel } from '@mui/material';
-import axios from 'axios';
 import dayjs from 'dayjs';
 import AddCircleIcon from '@mui/icons-material/AddCircle';
 import RemoveCircleIcon from '@mui/icons-material/RemoveCircle';
 import SaveIcon from '@mui/icons-material/Save';
 import CancelIcon from '@mui/icons-material/Cancel';
+import { apiClient } from '../../apiClient';  // Importa el apiClient configurado
 
 const AddOrderDialog = ({ open, handleClose, productsMap, setOrders, token }) => {
   const [nombreCompleto, setNombreCompleto] = useState('');
@@ -60,11 +60,7 @@ const AddOrderDialog = ({ open, handleClose, productsMap, setOrders, token }) =>
     };
 
     try {
-      const response = await axios.post(`${process.env.REACT_APP_BACKEND_URL}/pedido_manual`, newOrder, {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      });
+      const response = await apiClient.post('/pedido_manual', newOrder);
       setOrders(prevOrders => [...prevOrders, response.data]);
       handleClose();
     } catch (error) {

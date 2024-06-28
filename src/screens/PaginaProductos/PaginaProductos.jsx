@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import { Button, Grid, Container, CircularProgress } from '@mui/material';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import ProductoCard from '../../components/ProductCard/ProductCard';
 import ProductoDialog from '../../components/ProductDialog/ProductDialog';
+import { apiClient } from '../../apiClient';  // Importa el apiClient configurado
 
 function PaginaProductos() {
     const [open, setOpen] = useState(false);
@@ -13,8 +13,6 @@ function PaginaProductos() {
     const [productoId, setProductoId] = useState(null);
     const [loading, setLoading] = useState(false);
 
-    const apiBaseUrl = process.env.REACT_APP_BACKEND_URL;
-
     useEffect(() => {
         fetchProductos();
     }, []);
@@ -22,7 +20,7 @@ function PaginaProductos() {
     const fetchProductos = async () => {
         setLoading(true);
         try {
-            const response = await axios.get(`${apiBaseUrl}/productos`);
+            const response = await apiClient.get('/productos');
             setProductos(response.data);
         } catch (error) {
             console.error('Error al obtener los productos', error);
@@ -43,9 +41,9 @@ function PaginaProductos() {
         }
 
         try {
-            const response = await axios({
+            const response = await apiClient({
                 method: editMode ? 'PUT' : 'POST',
-                url: `${apiBaseUrl}/productos${editMode ? `/${productoId}` : ''}`,
+                url: `/productos${editMode ? `/${productoId}` : ''}`,
                 data: formData,
                 headers: { 'Content-Type': 'multipart/form-data' },
             });
@@ -78,7 +76,7 @@ function PaginaProductos() {
     const handleDelete = async producto => {
         setLoading(true);
         try {
-            await axios.delete(`${apiBaseUrl}/productos/${producto.id}`);
+            await apiClient.delete(`/productos/${producto.id}`);
             setProductos(productos.filter(p => p.id !== producto.id));
         } catch (error) {
             console.error('Error al eliminar el producto', error);
@@ -109,30 +107,37 @@ function PaginaProductos() {
 
     return (
         <div style={{ backgroundColor: 'white', minHeight: '100vh' }}>
-        <Container maxWidth="xl">
-            <Button startIcon={<AddCircleOutlineIcon />} onClick={handleClickOpen} variant="contained" size="large" sx={{mt: 2, backgroundColor: '#5E55FE', color: 'white', borderRadius: '10px', '&:hover': { backgroundColor: '#7b45a1' },}}>
-                Agregar Producto
-            </Button>
-            {loading ? <CircularProgress /> : (
-                <Grid container spacing={3} justifyContent="center" alignItems="center" sx={{ mt: 5 }}>
-                    {productos.map((producto, index) => (
-                        <ProductoCard key={index} producto={producto} onDelete={handleDelete} onEdit={handleEdit} />
-                    ))}
-                </Grid>
-            )}
-            <ProductoDialog
-                open={open}
-                handleClose={handleClose}
-                handleChange={handleChange}
-                handleAddProducto={handleAddProducto}
-                nuevoProducto={nuevoProducto}
-                loading={loading}
-                editMode={editMode}
-            />
-        </Container>
+            <Container maxWidth="xl">
+                <Button 
+                    startIcon={<AddCircleOutlineIcon />} 
+                    onClick={handleClickOpen} 
+                    variant="contained" 
+                    size="large" 
+                    sx={{ mt: 2, backgroundColor: '#5E55FE', color: 'white', borderRadius: '10px', '&:hover': { backgroundColor: '#7b45a1' }, }}
+                >
+                    Agregar Producto
+                </Button>
+                {loading ? <CircularProgress /> : (
+                    <Grid container spacing={3} justifyContent="center" alignItems="center" sx={{ mt: 5 }}>
+                        {productos.map((producto, index) => (
+                            <ProductoCard key={index} producto={producto} onDelete={handleDelete} onEdit={handleEdit} />
+                        ))}
+                    </Grid>
+                )}
+                <ProductoDialog
+                    open={open}
+                    handleClose={handleClose}
+                    handleChange={handleChange}
+                    handleAddProducto={handleAddProducto}
+                    nuevoProducto={nuevoProducto}
+                    loading={loading}
+                    editMode={editMode}
+                />
+            </Container>
         </div>
     );
 }
 
 export default PaginaProductos;
+
 

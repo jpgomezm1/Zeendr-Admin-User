@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import { Box, Typography, Grid, Button, Tabs, Tab, AppBar } from '@mui/material';
+import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import ProductCardComponent from './ProductCardComponent';
 import CostDialogComponent from './CostDialogComponent';
 import NewProductCostDialogComponent from './NewProductCostDialogComponent';
 import RecipeDialogComponent from './RecipeDialogComponent';
-import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import ProductosIntermediosComponent from '../../components/ProductosIntermedios/ProductosIntermediosComponent';
 import TabPanel from '../GastosScreen/TabPanel';
+import { apiClient } from '../../apiClient';  // Importa el apiClient configurado
 
 const CostosScreen = () => {
   const [productos, setProductos] = useState([]);
@@ -21,12 +21,10 @@ const CostosScreen = () => {
   const [selectedRecipeProduct, setSelectedRecipeProduct] = useState(null);
   const [tabIndex, setTabIndex] = useState(0); // New state for Tabs
 
-  const apiBaseUrl = process.env.REACT_APP_BACKEND_URL;
-
   useEffect(() => {
     const fetchProductos = async () => {
       try {
-        const response = await axios.get(`${apiBaseUrl}/productos`);
+        const response = await apiClient.get('/productos');
         setProductos(response.data);
       } catch (error) {
         console.error('Error fetching products:', error);
@@ -35,7 +33,7 @@ const CostosScreen = () => {
 
     const fetchInsumos = async () => {
       try {
-        const response = await axios.get(`${apiBaseUrl}/productos_proveedor`);
+        const response = await apiClient.get('/productos_proveedor');
         setInsumos(response.data);
       } catch (error) {
         console.error('Error fetching insumos:', error);
@@ -44,7 +42,7 @@ const CostosScreen = () => {
 
     fetchProductos();
     fetchInsumos();
-  }, [apiBaseUrl]);
+  }, []);
 
   const handleOpenDialog = (producto) => {
     const updatedInsumos = (producto.insumos || []).map(insumo => ({
@@ -76,7 +74,7 @@ const CostosScreen = () => {
         })),
         unidades_producidas: unidadesProducidas
       };
-      await axios.put(`${apiBaseUrl}/productos/${selectedProduct.id}`, updatedProduct);
+      await apiClient.put(`/productos/${selectedProduct.id}`, updatedProduct);
       setProductos(productos.map((producto) => (producto.id === selectedProduct.id ? updatedProduct : producto)));
       handleCloseDialog();
     } catch (error) {
@@ -229,5 +227,3 @@ const CostosScreen = () => {
 };
 
 export default CostosScreen;
-
-

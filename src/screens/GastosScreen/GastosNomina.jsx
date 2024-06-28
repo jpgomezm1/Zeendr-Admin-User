@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import { Box, Typography, Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField, Grid, FormControlLabel, Switch, MenuItem, Select, Container } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import KPICard from './components/KPICard';
 import dayjs from 'dayjs';
+import { apiClient } from '../../apiClient';
 
 const GastosNomina = () => {
   const [open, setOpen] = useState(false);
@@ -21,10 +21,9 @@ const GastosNomina = () => {
   const [inputHoras, setInputHoras] = useState('');
 
   const auxilioTransporte = 140000; // Auxilio de transporte 2024
-  const apiBaseUrl = process.env.REACT_APP_BACKEND_URL;
 
   useEffect(() => {
-    axios.get(`${apiBaseUrl}/empleados`)
+    apiClient.get('/empleados')
       .then(response => {
         setEmpleados(response.data);
       })
@@ -32,7 +31,7 @@ const GastosNomina = () => {
         console.error('Error fetching empleados:', error);
       });
 
-    axios.get(`${apiBaseUrl}/horas_trabajadas`)
+    apiClient.get('/horas_trabajadas')
       .then(response => {
         const horasTrabajadas = response.data.reduce((acc, curr) => {
           acc[`${curr.empleado_id}-${curr.mes}`] = curr.horas;
@@ -43,7 +42,7 @@ const GastosNomina = () => {
       .catch(error => {
         console.error('Error fetching horas trabajadas:', error);
       });
-  }, [apiBaseUrl]);
+  }, []);
 
   const handleOpen = () => {
     setOpen(true);
@@ -101,7 +100,7 @@ const GastosNomina = () => {
     };
 
     try {
-      await axios.post(`${apiBaseUrl}/empleados`, newEmpleado);
+      await apiClient.post('/empleados', newEmpleado);
       setEmpleados([...empleados, newEmpleado]);
       handleClose();
     } catch (error) {
@@ -131,7 +130,7 @@ const GastosNomina = () => {
       año: dayjs().year(),
       horas: inputHoras
     };
-    axios.post(`${apiBaseUrl}/horas_trabajadas`, newHorasTrabajadas)
+    apiClient.post('/horas_trabajadas', newHorasTrabajadas)
       .then(response => {
         setHorasTrabajadas({
           ...horasTrabajadas,
@@ -320,3 +319,4 @@ const GastosNomina = () => {
 };
 
 export default GastosNomina;
+

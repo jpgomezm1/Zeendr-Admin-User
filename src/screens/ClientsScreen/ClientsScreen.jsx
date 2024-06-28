@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import { Box, CircularProgress, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from '@mui/material';
 import { styled } from '@mui/system';
 import deliveryCosts from '../../data/barrios';
+import { apiClient } from '../../apiClient';  // Importa el apiClient configurado
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
   backgroundColor: theme.palette.common.black,
@@ -15,12 +15,10 @@ const ClientsScreen = () => {
   const [loading, setLoading] = useState(true);
   const [clients, setClients] = useState([]);
 
-  const apiBaseUrl = process.env.REACT_APP_BACKEND_URL;
-
   useEffect(() => {
     const fetchOrders = async () => {
       try {
-        const ordersResponse = await axios.get(`${apiBaseUrl}/pedidos`);
+        const ordersResponse = await apiClient.get('/pedidos');
         const ordersData = ordersResponse.data;
         setOrders(ordersData);
 
@@ -58,7 +56,7 @@ const ClientsScreen = () => {
     };
 
     fetchOrders();
-  }, [apiBaseUrl]);
+  }, []);
 
   const formatCurrency = (value) => {
     return new Intl.NumberFormat('es-CO', {

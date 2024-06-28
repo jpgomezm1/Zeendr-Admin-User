@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import { Box, TextField, Button, Paper, Typography, IconButton, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
 import { styled } from '@mui/system';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import SaveIcon from '@mui/icons-material/Save';
+import { apiClient } from '../../apiClient';  // Importa el apiClient configurado
 
 const primaryColor = '#5E55FE';
 
@@ -35,17 +35,10 @@ const HorarioAtencion = () => {
   const [editHorarioId, setEditHorarioId] = useState(null);
   const [editData, setEditData] = useState({ apertura: '', cierre: '' });
 
-  const apiBaseUrl = process.env.REACT_APP_BACKEND_URL;
-
   useEffect(() => {
     const fetchHorarios = async () => {
       try {
-        const token = localStorage.getItem('token');
-        const response = await axios.get(`${apiBaseUrl}/horarios`, {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        });
+        const response = await apiClient.get('/horarios');
         setHorarios(response.data);
       } catch (error) {
         console.error('Error fetching horarios:', error);
@@ -53,7 +46,7 @@ const HorarioAtencion = () => {
     };
 
     fetchHorarios();
-  }, [apiBaseUrl]);
+  }, []);
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -62,12 +55,7 @@ const HorarioAtencion = () => {
 
   const handleAddHorario = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.post(`${apiBaseUrl}/horarios`, newHorario, {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      });
+      const response = await apiClient.post('/horarios', newHorario);
       setHorarios([...horarios, response.data]);
       setNewHorario({ dia: 'Lunes', apertura: '', cierre: '' });
     } catch (error) {
@@ -82,12 +70,7 @@ const HorarioAtencion = () => {
 
   const handleSave = async () => {
     try {
-      const token = localStorage.getItem('token');
-      await axios.put(`${apiBaseUrl}/horarios/${editHorarioId}`, editData, {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      });
+      await apiClient.put(`/horarios/${editHorarioId}`, editData);
       setHorarios(horarios.map(h => (h.id === editHorarioId ? { ...h, ...editData } : h)));
       setEditHorarioId(null);
       setEditData({ apertura: '', cierre: '' });
@@ -98,12 +81,7 @@ const HorarioAtencion = () => {
 
   const handleDelete = async (id) => {
     try {
-      const token = localStorage.getItem('token');
-      await axios.delete(`${apiBaseUrl}/horarios/${id}`, {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      });
+      await apiClient.delete(`/horarios/${id}`);
       setHorarios(horarios.filter(h => h.id !== id));
     } catch (error) {
       console.error('Error deleting horario:', error);

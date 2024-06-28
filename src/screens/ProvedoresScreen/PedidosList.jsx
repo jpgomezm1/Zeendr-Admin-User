@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
 import {
   Container, Typography, CircularProgress, Card, CardHeader, CardContent, CardActions, Collapse, IconButton, Box, Grid, Divider, Button
 } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { styled } from '@mui/material/styles';
+import { apiClient } from '../../apiClient'; // Importar el apiClient configurado
 
 const formatCurrency = (value) => {
   return new Intl.NumberFormat('es-CO', {
@@ -14,8 +14,6 @@ const formatCurrency = (value) => {
     maximumFractionDigits: 0
   }).format(value);
 };
-
-const apiBaseUrl = process.env.REACT_APP_BACKEND_URL;
 
 const ExpandMore = styled((props) => {
   const { expand, ...other } = props;
@@ -45,7 +43,7 @@ function PedidosList() {
 
   const fetchPedidos = async () => {
     try {
-      const response = await axios.get(`${apiBaseUrl}/pedidos_proveedores`);
+      const response = await apiClient.get('/pedidos_proveedores');
       setPedidos(response.data);
     } catch (error) {
       console.error('Error al obtener los pedidos', error);
@@ -59,7 +57,7 @@ function PedidosList() {
 
   const handleUpdateEstado = async (pedidoId) => {
     try {
-      const response = await axios.put(`${apiBaseUrl}/pedidos_proveedores/${pedidoId}`, { estado: 'Pedido Recibido' });
+      const response = await apiClient.put(`/pedidos_proveedores/${pedidoId}`, { estado: 'Pedido Recibido' });
       setPedidos((prevPedidos) =>
         prevPedidos.map((pedido) =>
           pedido.id === pedidoId ? { ...pedido, estado: response.data.estado } : pedido
@@ -142,4 +140,3 @@ function PedidosList() {
 }
 
 export default PedidosList;
-

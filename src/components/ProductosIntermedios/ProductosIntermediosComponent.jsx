@@ -1,11 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Box, Button, Grid, Typography } from '@mui/material';
-import axios from 'axios';
+import { apiClient } from '../../apiClient'; // Importa el apiClient configurado
 import IntermedioDialogComponent from './IntermedioDialogComponent';
 import IntermedioCardComponent from './IntermedioCardComponent';
 import IntermedioRecipeDialogComponent from './IntermedioRecipeDialogComponent';
-
-const apiBaseUrl = process.env.REACT_APP_BACKEND_URL;
 
 const ProductosIntermediosComponent = () => {
   const [productosIntermedios, setProductosIntermedios] = useState([]);
@@ -17,7 +15,7 @@ const ProductosIntermediosComponent = () => {
   useEffect(() => {
     const fetchInsumos = async () => {
       try {
-        const response = await axios.get(`${apiBaseUrl}/productos_proveedor`);
+        const response = await apiClient.get('/productos_proveedor');
         setInsumos(response.data);
       } catch (error) {
         console.error('Error fetching insumos:', error);
@@ -26,7 +24,7 @@ const ProductosIntermediosComponent = () => {
 
     const fetchProductosIntermedios = async () => {
       try {
-        const response = await axios.get(`${apiBaseUrl}/productos_intermedios`);
+        const response = await apiClient.get('/productos_intermedios');
         setProductosIntermedios(response.data);
       } catch (error) {
         console.error('Error fetching productos intermedios:', error);
@@ -35,7 +33,7 @@ const ProductosIntermediosComponent = () => {
 
     fetchInsumos();
     fetchProductosIntermedios();
-  }, [apiBaseUrl]);
+  }, []);
 
   const handleOpenDialog = () => {
     setSelectedProduct(null);
@@ -49,10 +47,10 @@ const ProductosIntermediosComponent = () => {
   const handleSaveIntermedio = async (newProduct) => {
     try {
       if (selectedProduct) {
-        const response = await axios.put(`${apiBaseUrl}/productos_intermedios/${selectedProduct.id}`, newProduct);
+        const response = await apiClient.put(`/productos_intermedios/${selectedProduct.id}`, newProduct);
         setProductosIntermedios(productosIntermedios.map(product => product.id === selectedProduct.id ? response.data : product));
       } else {
-        const response = await axios.post(`${apiBaseUrl}/productos_intermedios`, newProduct);
+        const response = await apiClient.post('/productos_intermedios', newProduct);
         setProductosIntermedios([...productosIntermedios, response.data]);
       }
       handleCloseDialog();
@@ -63,7 +61,7 @@ const ProductosIntermediosComponent = () => {
 
   const handleDeleteProduct = async (productId) => {
     try {
-      await axios.delete(`${apiBaseUrl}/productos_intermedios/${productId}`);
+      await apiClient.delete(`/productos_intermedios/${productId}`);
       setProductosIntermedios(productosIntermedios.filter(product => product.id !== productId));
     } catch (error) {
       console.error('Error deleting producto intermedio:', error);
@@ -124,4 +122,3 @@ const ProductosIntermediosComponent = () => {
 };
 
 export default ProductosIntermediosComponent;
-

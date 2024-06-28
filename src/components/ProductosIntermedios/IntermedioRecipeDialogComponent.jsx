@@ -5,14 +5,13 @@ import {
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import SaveIcon from '@mui/icons-material/Save';
-import axios from 'axios';
+import { apiClient } from '../../apiClient'; // Importa el apiClient configurado
 
 const IntermedioRecipeDialogComponent = ({ open, producto, handleCloseDialog, insumos }) => {
   const [receta, setReceta] = useState('');
   const [insumosData, setInsumosData] = useState([]);
   const [unidadesProducidas, setUnidadesProducidas] = useState(1);
   const [isEditable, setIsEditable] = useState(false);
-  const apiBaseUrl = process.env.REACT_APP_BACKEND_URL;
 
   useEffect(() => {
     if (producto) {
@@ -25,7 +24,7 @@ const IntermedioRecipeDialogComponent = ({ open, producto, handleCloseDialog, in
 
   const fetchInsumosWithNames = async (insumos) => {
     try {
-      const response = await axios.get(`${apiBaseUrl}/productos_proveedor`);
+      const response = await apiClient.get('/productos_proveedor');
       const allInsumos = response.data;
       const insumosWithNames = insumos.map(insumo => {
         const insumoData = allInsumos.find(item => item.id === insumo.insumoId);
@@ -43,7 +42,7 @@ const IntermedioRecipeDialogComponent = ({ open, producto, handleCloseDialog, in
   const handleSaveReceta = async () => {
     try {
       const updatedProduct = { ...producto, receta, unidades_producidas: unidadesProducidas };
-      await axios.put(`${apiBaseUrl}/productos_intermedios/${producto.id}`, updatedProduct);
+      await apiClient.put(`/productos_intermedios/${producto.id}`, updatedProduct);
       handleCloseDialog();
     } catch (error) {
       console.error('Error updating recipe:', error);
@@ -130,4 +129,3 @@ const IntermedioRecipeDialogComponent = ({ open, producto, handleCloseDialog, in
 };
 
 export default IntermedioRecipeDialogComponent;
-

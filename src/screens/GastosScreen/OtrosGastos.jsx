@@ -6,7 +6,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import AddGastoDialog from './AddGastoDialog';
 import KPICard from './components/KPICard';
 import { styled } from '@mui/system';
-import axios from 'axios';
+import { apiClient } from '../../apiClient';
 
 const formatCurrency = (value) => {
   return new Intl.NumberFormat('es-CO', {
@@ -30,19 +30,13 @@ const OtrosGastos = () => {
   const [mesSeleccionado, setMesSeleccionado] = useState('Todos');
   const [viewAsTable, setViewAsTable] = useState(false);
 
-  const apiBaseUrl = process.env.REACT_APP_BACKEND_URL;
-
   useEffect(() => {
     fetchGastos();
   }, []);
 
   const fetchGastos = async () => {
     try {
-      const response = await axios.get(`${apiBaseUrl}/gastos`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`
-        }
-      });
+      const response = await apiClient.get('/gastos');
       setGastos(response.data);
     } catch (error) {
       console.error('Error al obtener los gastos:', error);
@@ -73,11 +67,7 @@ const OtrosGastos = () => {
 
   const handleDeleteGasto = async (id) => {
     try {
-      await axios.delete(`${apiBaseUrl}/gastos/${id}`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`
-        }
-      });
+      await apiClient.delete(`/gastos/${id}`);
       setGastos(gastos.filter(gasto => gasto.id !== id));
     } catch (error) {
       console.error('Error al eliminar el gasto:', error);

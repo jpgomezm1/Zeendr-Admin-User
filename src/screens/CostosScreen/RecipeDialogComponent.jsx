@@ -5,9 +5,7 @@ import {
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import SaveIcon from '@mui/icons-material/Save';
-import axios from 'axios';
-
-const apiBaseUrl = process.env.REACT_APP_BACKEND_URL;
+import { apiClient } from '../../apiClient';  // Importa el apiClient configurado
 
 const RecipeDialogComponent = ({ open, producto, handleCloseDialog }) => {
   const [receta, setReceta] = useState('');
@@ -26,7 +24,7 @@ const RecipeDialogComponent = ({ open, producto, handleCloseDialog }) => {
 
   const handleSaveReceta = async () => {
     try {
-      await axios.put(`${apiBaseUrl}/productos/${producto.id}`, { receta });
+      await apiClient.put(`/productos/${producto.id}`, { receta });
       handleCloseDialog();
     } catch (error) {
       console.error('Error updating recipe:', error);
@@ -35,7 +33,7 @@ const RecipeDialogComponent = ({ open, producto, handleCloseDialog }) => {
 
   const fetchInsumosNames = async (insumos) => {
     try {
-      const response = await axios.get(`${apiBaseUrl}/productos_proveedor`);
+      const response = await apiClient.get('/productos_proveedor');
       const allInsumos = response.data;
       return insumos.map(insumo => {
         const insumoData = allInsumos.find(item => item.id === insumo.insumo_id);
@@ -129,4 +127,3 @@ const RecipeDialogComponent = ({ open, producto, handleCloseDialog }) => {
 };
 
 export default RecipeDialogComponent;
-

@@ -5,11 +5,11 @@ import {
   FormControl, InputLabel, Select, MenuItem
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
-import axios from 'axios';
 import { styled } from '@mui/system';
 import dayjs from 'dayjs';
 import 'dayjs/locale/es';
 import * as XLSX from 'xlsx';
+import { apiClient } from '../../apiClient';  // Importa el apiClient configurado
 
 dayjs.locale('es');  // Configurar dayjs para usar español
 
@@ -40,7 +40,7 @@ const MovimientosDialog = ({ open, handleClose }) => {
   const fetchMovimientos = async () => {
     setLoading(true);
     try {
-      const response = await axios.get(`${process.env.REACT_APP_API_URL}/inventarios/movimientos`);
+      const response = await apiClient.get('/inventarios/movimientos');
       setMovimientos(response.data);
       const meses = [...new Set(response.data.map(movimiento => dayjs(movimiento.fecha_hora).format('YYYY-MM')))];
       setMesesDisponibles(meses);

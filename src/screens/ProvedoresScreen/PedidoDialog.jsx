@@ -5,9 +5,7 @@ import {
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import Select from 'react-select';
-import axios from 'axios';
-
-const apiBaseUrl = process.env.REACT_APP_BACKEND_URL;
+import { apiClient } from '../../apiClient'; // Importar el apiClient configurado
 
 const formatCurrency = (value) => {
   return new Intl.NumberFormat('es-CO', {
@@ -52,7 +50,7 @@ function PedidoDialog({ open, onClose, productos, proveedores }) {
     };
 
     try {
-      const response = await axios.post(`${apiBaseUrl}/pedidos_proveedores`, pedido);
+      const response = await apiClient.post('/pedidos_proveedores', pedido);
       console.log('Pedido enviado:', response.data);
       onClose();
     } catch (error) {
@@ -127,6 +125,4 @@ function PedidoDialog({ open, onClose, productos, proveedores }) {
 }
 
 export default PedidoDialog;
-
-
 

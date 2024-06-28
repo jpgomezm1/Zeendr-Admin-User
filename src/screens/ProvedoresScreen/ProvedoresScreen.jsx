@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import {
   Container, Typography, Grid, Button, CircularProgress, ToggleButton, ToggleButtonGroup, Box, Select, MenuItem, TextField, FormControl, InputLabel
 } from '@mui/material';
@@ -14,8 +13,7 @@ import CategoriaDialog from './CategoriaDialog';
 import CategoriasDialog from './CategoriasDialog';
 import PedidoDialog from './PedidoDialog';
 import PedidosList from './PedidosList'; // Importar el nuevo componente
-
-const apiBaseUrl = process.env.REACT_APP_BACKEND_URL;
+import { apiClient } from '../../apiClient'; // Importar el apiClient configurado
 
 function ProveedoresScreen() {
   const [productosProveedor, setProductosProveedor] = useState([]);
@@ -46,7 +44,7 @@ function ProveedoresScreen() {
   const fetchProductosProveedor = async () => {
     setLoading(true);
     try {
-      const response = await axios.get(`${apiBaseUrl}/productos_proveedor`);
+      const response = await apiClient.get('/productos_proveedor');
       setProductosProveedor(response.data);
     } catch (error) {
       console.error('Error al obtener los productos del proveedor', error);
@@ -57,7 +55,7 @@ function ProveedoresScreen() {
   const fetchProveedores = async () => {
     setLoading(true);
     try {
-      const response = await axios.get(`${apiBaseUrl}/proveedores`);
+      const response = await apiClient.get('/proveedores');
       setProveedores(response.data);
     } catch (error) {
       console.error('Error al obtener los proveedores', error);
@@ -68,7 +66,7 @@ function ProveedoresScreen() {
   const fetchCategorias = async () => {
     setLoading(true);
     try {
-      const response = await axios.get(`${apiBaseUrl}/categorias_suppliers`);
+      const response = await apiClient.get('/categorias_suppliers');
       const categorias = response.data;
       setCategoriasProductos(categorias.filter(c => c.tipo === 'producto'));
       setCategoriasProveedores(categorias.filter(c => c.tipo === 'proveedor'));
@@ -82,9 +80,9 @@ function ProveedoresScreen() {
     setLoading(true);
     try {
       if (editingProduct) {
-        await axios.put(`${apiBaseUrl}/productos_proveedor/${editingProduct.id}`, producto);
+        await apiClient.put(`/productos_proveedor/${editingProduct.id}`, producto);
       } else {
-        const response = await axios.post(`${apiBaseUrl}/productos_proveedor`, producto);
+        const response = await apiClient.post('/productos_proveedor', producto);
         setProductosProveedor([...productosProveedor, response.data]);
       }
       setOpenProductoDialog(false);
@@ -100,9 +98,9 @@ function ProveedoresScreen() {
     setLoading(true);
     try {
       if (editingSupplier) {
-        await axios.put(`${apiBaseUrl}/proveedores/${editingSupplier.id}`, proveedor);
+        await apiClient.put(`/proveedores/${editingSupplier.id}`, proveedor);
       } else {
-        const response = await axios.post(`${apiBaseUrl}/proveedores`, proveedor);
+        const response = await apiClient.post('/proveedores', proveedor);
         setProveedores([...proveedores, response.data]);
       }
       setOpenProveedorDialog(false);
@@ -117,7 +115,7 @@ function ProveedoresScreen() {
   const handleAddCategoria = async (categoria) => {
     setLoading(true);
     try {
-      const response = await axios.post(`${apiBaseUrl}/categorias_suppliers`, categoria);
+      await apiClient.post('/categorias_suppliers', categoria);
       setOpenCategoriaDialog(false);
       fetchCategorias();
     } catch (error) {
@@ -129,7 +127,7 @@ function ProveedoresScreen() {
   const handleEditCategoria = async (categoria) => {
     setLoading(true);
     try {
-      await axios.put(`${apiBaseUrl}/categorias_suppliers/${categoria.id}`, categoria);
+      await apiClient.put(`/categorias_suppliers/${categoria.id}`, categoria);
       fetchCategorias();
     } catch (error) {
       console.error('Error al editar categoría', error);
@@ -140,7 +138,7 @@ function ProveedoresScreen() {
   const handleDeleteCategoria = async (id) => {
     setLoading(true);
     try {
-      await axios.delete(`${apiBaseUrl}/categorias_suppliers/${id}`);
+      await apiClient.delete(`/categorias_suppliers/${id}`);
       fetchCategorias();
     } catch (error) {
       console.error('Error al eliminar categoría', error);
@@ -161,7 +159,7 @@ function ProveedoresScreen() {
   const handleDeleteProducto = async (id) => {
     setLoading(true);
     try {
-      await axios.delete(`${apiBaseUrl}/productos_proveedor/${id}`);
+      await apiClient.delete(`/productos_proveedor/${id}`);
       fetchProductosProveedor();
     } catch (error) {
       console.error('Error al eliminar producto del proveedor', error);
@@ -172,7 +170,7 @@ function ProveedoresScreen() {
   const handleDeleteProveedor = async (id) => {
     setLoading(true);
     try {
-      await axios.delete(`${apiBaseUrl}/proveedores/${id}`);
+      await apiClient.delete(`/proveedores/${id}`);
       fetchProveedores();
     } catch (error) {
       console.error('Error al eliminar proveedor', error);
@@ -386,4 +384,3 @@ function ProveedoresScreen() {
 }
 
 export default ProveedoresScreen;
-

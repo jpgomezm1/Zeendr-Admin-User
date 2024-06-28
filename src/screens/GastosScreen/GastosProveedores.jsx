@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
 import {
   Container, Typography, CircularProgress, Card, CardHeader, CardContent, CardActions, Collapse, IconButton, Box, Grid, Divider, Button, Select, MenuItem, FormControl, InputLabel
 } from '@mui/material';
@@ -8,6 +7,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import { styled } from '@mui/material/styles';
 import KPICard from './components/KPICard';
 import dayjs from 'dayjs';
+import { apiClient } from '../../apiClient';
 
 const formatCurrency = (value) => {
   return new Intl.NumberFormat('es-CO', {
@@ -17,8 +17,6 @@ const formatCurrency = (value) => {
     maximumFractionDigits: 0
   }).format(value);
 };
-
-const apiBaseUrl = process.env.REACT_APP_BACKEND_URL;
 
 const ExpandMore = styled((props) => {
   const { expand, ...other } = props;
@@ -50,7 +48,7 @@ function GastosProveedores() {
 
   const fetchPedidos = async () => {
     try {
-      const response = await axios.get(`${apiBaseUrl}/pedidos_proveedores`);
+      const response = await apiClient.get('/pedidos_proveedores');
       setPedidos(response.data);
 
       // Calcular el total gastado
@@ -68,7 +66,7 @@ function GastosProveedores() {
 
   const handleUpdateEstado = async (pedidoId) => {
     try {
-      const response = await axios.put(`${apiBaseUrl}/pedidos_proveedores/${pedidoId}`, { estado: 'Pedido Recibido' });
+      const response = await apiClient.put(`/pedidos_proveedores/${pedidoId}`, { estado: 'Pedido Recibido' });
       setPedidos((prevPedidos) =>
         prevPedidos.map((pedido) =>
           pedido.id === pedidoId ? { ...pedido, estado: response.data.estado } : pedido
@@ -81,7 +79,7 @@ function GastosProveedores() {
 
   const handleDeletePedido = async (pedidoId) => {
     try {
-      await axios.delete(`${apiBaseUrl}/pedidos_proveedores/${pedidoId}`);
+      await apiClient.delete(`/pedidos_proveedores/${pedidoId}`);
       setPedidos((prevPedidos) => prevPedidos.filter((pedido) => pedido.id !== pedidoId));
     } catch (error) {
       console.error('Error al eliminar el pedido', error);
@@ -206,5 +204,4 @@ function GastosProveedores() {
 }
 
 export default GastosProveedores;
-
 

@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import { Box, Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField, Paper, IconButton } from '@mui/material';
 import { styled } from '@mui/system';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import SaveIcon from '@mui/icons-material/Save';
+import { apiClient } from '../../apiClient';  // Importa el apiClient configurado
 
 const primaryColor = '#4A90E2';
 
@@ -34,17 +34,10 @@ const CategoriaTable = () => {
   const [editNombre, setEditNombre] = useState('');
   const [categoriasIds, setCategoriasIds] = useState({});
 
-  const apiBaseUrl = process.env.REACT_APP_BACKEND_URL;
-
   useEffect(() => {
     const fetchCategorias = async () => {
       try {
-        const token = localStorage.getItem('token'); // Asegúrate de que el token JWT esté almacenado en localStorage
-        const response = await axios.get(`${apiBaseUrl}/categorias`, {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        });
+        const response = await apiClient.get('/categorias');
         const fetchedCategorias = response.data.reduce((acc, categoria) => {
           acc[categoria.nombre] = categoria.id;
           setCategoriasIds((prevIds) => ({ ...prevIds, [categoria.nombre]: categoria.id }));
@@ -57,17 +50,12 @@ const CategoriaTable = () => {
     };
 
     fetchCategorias();
-  }, [apiBaseUrl]);
+  }, []);
 
   const handleAddCategoria = async () => {
     if (newCategoria) {
       try {
-        const token = localStorage.getItem('token');
-        const response = await axios.post(`${apiBaseUrl}/categorias`, { nombre: newCategoria }, {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        });
+        const response = await apiClient.post('/categorias', { nombre: newCategoria });
         const addedCategoria = response.data;
         setCategorias({ ...categorias, [addedCategoria.nombre]: addedCategoria.id });
         setCategoriasIds((prevIds) => ({ ...prevIds, [addedCategoria.nombre]: addedCategoria.id }));
@@ -85,13 +73,8 @@ const CategoriaTable = () => {
 
   const handleSave = async (oldNombre) => {
     try {
-      const token = localStorage.getItem('token');
       const categoriaId = categoriasIds[oldNombre];
-      const response = await axios.put(`${apiBaseUrl}/categorias/${categoriaId}`, { nombre: editNombre }, {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      });
+      const response = await apiClient.put(`/categorias/${categoriaId}`, { nombre: editNombre });
       const updatedCategoria = response.data;
       const updatedCategorias = { ...categorias };
       delete updatedCategorias[oldNombre];
@@ -106,13 +89,8 @@ const CategoriaTable = () => {
 
   const handleDeleteCategoria = async (nombre) => {
     try {
-      const token = localStorage.getItem('token');
       const categoriaId = categoriasIds[nombre];
-      await axios.delete(`${apiBaseUrl}/categorias/${categoriaId}`, {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      });
+      await apiClient.delete(`/categorias/${categoriaId}`);
       const { [nombre]: _, ...newCategorias } = categorias;
       setCategorias(newCategorias);
       const { [nombre]: __, ...newIds } = categoriasIds;

@@ -1,9 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import {
-  Container, Grid, Card, CardContent, Typography, TextField,
-  CircularProgress, IconButton, InputAdornment, Button
-} from '@mui/material';
+import { Box, Button, Container, CircularProgress, Grid, TextField, Typography, Card, CardContent, IconButton, InputAdornment } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import SaveIcon from '@mui/icons-material/Save';
 import CancelIcon from '@mui/icons-material/Cancel';
@@ -11,17 +7,18 @@ import SearchIcon from '@mui/icons-material/Search';
 import { styled } from '@mui/system';
 import InventoryDialog from './InventoryDialog';
 import MovimientosDialog from './MovimientosDialog';
+import { apiClient } from '../../apiClient';  // Importa el apiClient configurado
 
-const apiBaseUrl = process.env.REACT_APP_BACKEND_URL;
+const primaryColor = '#5E55FE';
 
-const formatCurrency = (value) => {
-  return new Intl.NumberFormat('es-CO', {
-    style: 'currency',
-    currency: 'COP',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0
-  }).format(value);
-};
+const StyledButton = styled(Button)(({ theme }) => ({
+  backgroundColor: primaryColor,
+  color: theme.palette.common.white,
+  textTransform: 'none',
+  '&:hover': {
+    backgroundColor: '#7b45a1',
+  }
+}));
 
 const StyledCard = styled(Card)({
   border: '1px solid black',
@@ -31,6 +28,15 @@ const StyledCard = styled(Card)({
     transform: 'scale(1.02)',
   }
 });
+
+const formatCurrency = (value) => {
+  return new Intl.NumberFormat('es-CO', {
+    style: 'currency',
+    currency: 'COP',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0
+  }).format(value);
+};
 
 const StockScreen = () => {
   const [productos, setProductos] = useState([]);
@@ -47,7 +53,7 @@ const StockScreen = () => {
 
   const fetchProductos = async () => {
     try {
-      const response = await axios.get(`${apiBaseUrl}/productos`);
+      const response = await apiClient.get('/productos');
       setProductos(response.data);
       setLoading(false);
     } catch (error) {
@@ -64,7 +70,7 @@ const StockScreen = () => {
     const cantidad = stockChanges[id];
     if (cantidad !== undefined) {
       try {
-        const response = await axios.post(`${apiBaseUrl}/productos/${id}/stock`, { cantidad });
+        const response = await apiClient.post(`/productos/${id}/stock`, { cantidad });
         setEditing(prev => ({ ...prev, [id]: false }));
         setProductos(prevProductos => prevProductos.map(producto => 
           producto.id === id ? { ...producto, stock: response.data.stock } : producto
@@ -106,7 +112,7 @@ const StockScreen = () => {
 
   const handleSaveMovement = async (tipoMovimiento, comentario, cambiosStock) => {
     try {
-      const response = await axios.post(`${apiBaseUrl}/inventarios/movimiento`, {
+      const response = await apiClient.post('/inventarios/movimiento', {
         tipo: tipoMovimiento,
         comentario: comentario,
         cambiosStock: cambiosStock
@@ -207,4 +213,3 @@ const StockScreen = () => {
 };
 
 export default StockScreen;
-

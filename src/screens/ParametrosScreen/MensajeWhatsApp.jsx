@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import { Box, TextField, Button, Paper, Typography, Accordion, AccordionSummary, AccordionDetails } from '@mui/material';
 import { styled } from '@mui/system';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import { apiClient } from '../../apiClient';  // Importa el apiClient configurado
 
 const primaryColor = '#4A90E2';
 
@@ -31,17 +31,10 @@ const MensajeWhatsApp = () => {
     "Pedido Entregado": null
   });
 
-  const apiBaseUrl = process.env.REACT_APP_BACKEND_URL;
-
   useEffect(() => {
     const fetchMensajes = async () => {
       try {
-        const token = localStorage.getItem('token');
-        const response = await axios.get(`${apiBaseUrl}/mensajes`, {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        });
+        const response = await apiClient.get('/mensajes');
         const fetchedMensajes = response.data.reduce((acc, mensaje) => {
           acc.mensajes[mensaje.estado] = mensaje.mensaje;
           acc.mensajeIds[mensaje.estado] = mensaje.id;
@@ -55,7 +48,7 @@ const MensajeWhatsApp = () => {
     };
 
     fetchMensajes();
-  }, [apiBaseUrl]);
+  }, []);
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -65,22 +58,13 @@ const MensajeWhatsApp = () => {
   const handleSave = async () => {
     setLoading(true);
     try {
-      const token = localStorage.getItem('token');
       const promises = Object.keys(mensajes).map(async (estado) => {
         const mensajeId = mensajeIds[estado];
         const mensaje = mensajes[estado];
         if (mensajeId) {
-          return axios.put(`${apiBaseUrl}/mensajes/${mensajeId}`, { estado, mensaje }, {
-            headers: {
-              Authorization: `Bearer ${token}`
-            }
-          });
+          return apiClient.put(`/mensajes/${mensajeId}`, { estado, mensaje });
         } else {
-          return axios.post(`${apiBaseUrl}/mensajes`, { estado, mensaje }, {
-            headers: {
-              Authorization: `Bearer ${token}`
-            }
-          });
+          return apiClient.post('/mensajes', { estado, mensaje });
         }
       });
 

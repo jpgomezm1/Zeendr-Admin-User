@@ -1,20 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import {
   Dialog, DialogActions, DialogContent, DialogTitle, TextField, Button,
   FormControl, InputLabel, Select, MenuItem, CircularProgress, Card, CardMedia
 } from '@mui/material';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
+import { apiClient } from '../../apiClient';  // Importa el apiClient configurado
 
 function ProductoDialog({ open, handleClose, handleChange, handleAddProducto, nuevoProducto, loading, editMode }) {
   const [categorias, setCategorias] = useState([]);
 
-  const apiBaseUrl = process.env.REACT_APP_BACKEND_URL;
-
   useEffect(() => {
     const fetchCategorias = async () => {
       try {
-        const response = await axios.get(`${apiBaseUrl}/categorias`);
+        const response = await apiClient.get('/categorias');
         setCategorias(response.data);
       } catch (error) {
         console.error('Error fetching categorias:', error);
@@ -22,7 +20,7 @@ function ProductoDialog({ open, handleClose, handleChange, handleAddProducto, nu
     };
 
     fetchCategorias();
-  }, [apiBaseUrl]);
+  }, []);
 
   return (
     <Dialog open={open} onClose={handleClose}>
@@ -129,5 +127,4 @@ function ProductoDialog({ open, handleClose, handleChange, handleAddProducto, nu
 }
 
 export default ProductoDialog;
-
 

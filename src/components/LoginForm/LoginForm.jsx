@@ -22,8 +22,10 @@ const LoginForm = () => {
         event.preventDefault();
         try {
             const response = await axios.post(`${process.env.REACT_APP_BACKEND_URL}/login`, { username: email, password });
-            const { access_token, logo_url, establecimiento } = response.data;
+            const { access_token, refresh_token, logo_url, establecimiento } = response.data;
             dispatch(login({ token: access_token, logo_url, establecimiento }));
+            localStorage.setItem('access_token', access_token);
+            localStorage.setItem('refresh_token', refresh_token);
         } catch (error) {
             console.error('Error during login', error);
             setSnackbarMessage('Usuario o contraseña incorrectos');
@@ -119,3 +121,4 @@ const LoginForm = () => {
 };
 
 export default LoginForm;
+

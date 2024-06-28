@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import { Box, CircularProgress, Select, MenuItem, FormControl, InputLabel, Stack, Button } from '@mui/material';
 import OrderTable from './OrderTable';
 import Modals from './Modals';
@@ -9,6 +8,7 @@ import './DeliveryScreen.css';
 import dayjs from 'dayjs';
 import { useSelector } from 'react-redux';
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
+import { apiClient } from '../../apiClient';  // Importa el apiClient configurado
 
 const DeliveryScreen = () => {
   const [orders, setOrders] = useState([]);
@@ -25,11 +25,7 @@ const DeliveryScreen = () => {
   useEffect(() => {
     const fetchOrders = async () => {
       try {
-        const ordersResponse = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/pedidos`, {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        });
+        const ordersResponse = await apiClient.get('/pedidos');
         setOrders(ordersResponse.data);
       } catch (error) {
         console.error('Error fetching orders:', error);
@@ -40,11 +36,7 @@ const DeliveryScreen = () => {
 
     const fetchProducts = async () => {
       try {
-        const productsResponse = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/productos`, {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        });
+        const productsResponse = await apiClient.get('/productos');
         const productsMap = productsResponse.data.reduce((acc, product) => {
           acc[product.id] = product.nombre;
           return acc;
@@ -57,7 +49,7 @@ const DeliveryScreen = () => {
 
     fetchOrders();
     fetchProducts();
-  }, [token]);
+  }, []);
 
   const handleOpenComprobanteDialog = (comprobanteUrl) => {
     setSelectedComprobante(comprobanteUrl);
@@ -81,11 +73,7 @@ const DeliveryScreen = () => {
 
   const handleEstadoChange = async (orderId, newEstado) => {
     try {
-      await axios.put(`${process.env.REACT_APP_BACKEND_URL}/pedido/${orderId}/estado`, { estado: newEstado }, {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      });
+      await apiClient.put(`/pedido/${orderId}/estado`, { estado: newEstado });
       setOrders((prevOrders) =>
         prevOrders.map((order) =>
           order.id === orderId ? { ...order, estado: newEstado } : order
