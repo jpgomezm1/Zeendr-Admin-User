@@ -24,6 +24,14 @@ const AddGastoDialog = ({ open, handleClose, handleSaveGasto, gasto }) => {
     }
   }, [gasto]);
 
+  const handleCloseDialog = () => {
+    handleClose();
+    setTipoGasto('');
+    setDescripcion('');
+    setMonto('');
+    setFecha('');
+  };
+
   const handleSave = async () => {
     const newGasto = {
       tipo_gasto: tipoGasto,
@@ -52,11 +60,11 @@ const AddGastoDialog = ({ open, handleClose, handleSaveGasto, gasto }) => {
       console.error('Error al guardar el gasto:', error);
     }
 
-    handleClose();
+    handleCloseDialog();
   };
 
   return (
-    <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
+    <Dialog open={open} onClose={handleCloseDialog} maxWidth="sm" fullWidth>
       <DialogTitle>{gasto ? 'Editar Gasto' : 'Agregar Gasto'}</DialogTitle>
       <DialogContent>
         <TextField
@@ -100,7 +108,7 @@ const AddGastoDialog = ({ open, handleClose, handleSaveGasto, gasto }) => {
         />
       </DialogContent>
       <DialogActions>
-        <Button onClick={handleClose} sx={{ color: '#5E55FE', borderRadius: '8px' }}>Cancelar</Button>
+        <Button onClick={handleCloseDialog} sx={{ color: '#5E55FE', borderRadius: '8px' }}>Cancelar</Button>
         <Button onClick={handleSave} sx={{ color: '#5E55FE', borderRadius: '8px' }}>{gasto ? 'Guardar Cambios' : 'Guardar'}</Button>
       </DialogActions>
     </Dialog>

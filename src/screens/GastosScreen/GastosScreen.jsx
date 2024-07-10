@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { Box, Typography, Tabs, Tab, AppBar } from '@mui/material';
-import GastosNomina from './GastosNomina';
 import OtrosGastos from './OtrosGastos';
 import GastosProveedores from './GastosProveedores';
 import TabPanel from './TabPanel';
@@ -40,18 +39,14 @@ const GastosScreen = () => {
             },
           }}
         >
-          <Tab label="Gastos de Nómina" />
-          <Tab label="Otros Gastos" />
+          <Tab label="Gastos Operacion" />
           <Tab label="Gastos de Proveedores" />
         </Tabs>
       </AppBar>
       <TabPanel value={currentTab} index={0}>
-        <GastosNomina />
-      </TabPanel>
-      <TabPanel value={currentTab} index={1}>
         <OtrosGastos />
       </TabPanel>
-      <TabPanel value={currentTab} index={2}>
+      <TabPanel value={currentTab} index={1}>
         <GastosProveedores />
       </TabPanel>
     </Box>
@@ -59,4 +54,5 @@ const GastosScreen = () => {
 };
 
 export default GastosScreen;
+
 

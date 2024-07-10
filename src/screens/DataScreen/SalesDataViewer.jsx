@@ -3,10 +3,10 @@ import { Box, FormControl, InputLabel, Select, MenuItem, ToggleButton, ToggleBut
 import SalesPieChart from './charts/SalesPieChart';
 import ProductSalesCountPieChart from './charts/ProductSalesCountPieChart';
 
-const SalesDataViewer = ({ orders }) => {
+const SalesDataViewer = ({ orders, productsMap }) => {
   const [viewType, setViewType] = useState('Anual');
   const [selectedDate, setSelectedDate] = useState('');
-  const [generalView, setGeneralView] = useState(true);  // Inicializado en true
+  const [generalView, setGeneralView] = useState(true);
 
   const filteredOrders = orders.filter(order =>
     order.estado === 'Pedido Confirmado' || order.estado === 'Pedido Enviado'
@@ -107,11 +107,11 @@ const SalesDataViewer = ({ orders }) => {
       )}
 
       <Grid container spacing={2}>
+        {/* <Grid item xs={12} md={6}>
+          <SalesPieChart orders={generalView ? filteredOrders : (groupedOrders[selectedDate] || [])} productsMap={productsMap} />
+        </Grid> */}
         <Grid item xs={12} md={6}>
-          <SalesPieChart orders={generalView ? filteredOrders : (groupedOrders[selectedDate] || [])} />
-        </Grid>
-        <Grid item xs={12} md={6}>
-          <ProductSalesCountPieChart orders={generalView ? filteredOrders : (groupedOrders[selectedDate] || [])} />
+          <ProductSalesCountPieChart orders={generalView ? filteredOrders : (groupedOrders[selectedDate] || [])} productsMap={productsMap} />
         </Grid>
       </Grid>
     </Box>
@@ -119,3 +119,6 @@ const SalesDataViewer = ({ orders }) => {
 };
 
 export default SalesDataViewer;
+
+
+

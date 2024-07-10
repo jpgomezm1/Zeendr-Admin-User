@@ -112,10 +112,10 @@ function SoporteScreen() {
             rows={4}
           />
           <Stack direction="row" spacing={2} justifyContent="flex-end" sx={{ mt: 2 }}>
-            <Button variant="outlined" onClick={handleReset} sx={{color: '#a7a29a', borderColor: '#a7a29a'}}>
+            <Button variant="outlined" onClick={handleReset} sx={{color: '#5E55FE', borderColor: '#5E55FE'}}>
               Limpiar
             </Button>
-            <Button type="submit" variant="contained" disabled={isSubmitting} sx={{backgroundColor: '#EFE8DD', color: 'black', '&:hover': { backgroundColor: '#f3eee7' }}}>
+            <Button type="submit" variant="contained" disabled={isSubmitting} sx={{backgroundColor: '#5E55FE', color: 'white', '&:hover': { backgroundColor: '#5E55FE' }}}>
               Enviar
             </Button>
           </Stack>

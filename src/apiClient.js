@@ -1,5 +1,5 @@
 import axios from 'axios';
-import store from './redux/store'; // Importa correctamente tu store
+import store from './redux/store';
 import { login, logout } from './redux/authSlice';
 
 const refreshToken = async (dispatch) => {
@@ -40,6 +40,8 @@ apiClient.interceptors.response.use(
     if (error.response.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
       await refreshToken(store.dispatch);
+      const newToken = localStorage.getItem('access_token');
+      originalRequest.headers['Authorization'] = `Bearer ${newToken}`;
       return apiClient(originalRequest);
     }
     return Promise.reject(error);

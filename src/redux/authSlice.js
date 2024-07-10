@@ -4,7 +4,7 @@ const initialState = {
   isAuthenticated: false,
   token: null,
   logo_url: null,
-  establecimiento: null,  // Nuevo campo para el nombre del establecimiento
+  establecimiento: null,
 };
 
 const authSlice = createSlice({
@@ -15,13 +15,13 @@ const authSlice = createSlice({
       state.isAuthenticated = true;
       state.token = action.payload.token;
       state.logo_url = action.payload.logo_url;
-      state.establecimiento = action.payload.establecimiento;  // Guardar el nombre del establecimiento
+      state.establecimiento = action.payload.establecimiento;
     },
     logout(state) {
       state.isAuthenticated = false;
       state.token = null;
       state.logo_url = null;
-      state.establecimiento = null;  // Limpiar el nombre del establecimiento
+      state.establecimiento = null;
     }
   }
 });
@@ -29,5 +29,4 @@ const authSlice = createSlice({
 export const { login, logout } = authSlice.actions;
 
 export default authSlice.reducer;
-
 

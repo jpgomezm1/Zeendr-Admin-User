@@ -2,14 +2,14 @@ import React from 'react';
 import Plot from 'react-plotly.js';
 import { Typography } from '@mui/material';
 
-const ProductSalesCountPieChart = ({ orders }) => {
+const ProductSalesCountPieChart = ({ orders, productsMap }) => {
   const productSalesCount = {};
 
   orders.forEach(order => {
     try {
       const productos = JSON.parse(order.productos);
       productos.forEach(product => {
-        const productName = product.name || product.id;
+        const productName = productsMap[product.id] || product.id;
         const quantity = product.quantity || 1;
 
         if (productSalesCount[productName]) {

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Plot from 'react-plotly.js';
 import { Box, FormControl, InputLabel, Select, MenuItem, ToggleButton, ToggleButtonGroup, Typography } from '@mui/material';
 
@@ -26,6 +26,17 @@ const TransactionCountChart = ({ orders }) => {
     return grouped;
   };
 
+  const getMonthlyData = (year) => {
+    const monthlyData = Array(12).fill(0);
+    Object.entries(groupTransactions()).forEach(([date, count]) => {
+      if (date.startsWith(year)) {
+        const month = parseInt(date.split('-')[1], 10) - 1;
+        monthlyData[month] = count;
+      }
+    });
+    return monthlyData;
+  };
+
   const filteredTransactions = viewType === 'Diario'
     ? Object.entries(groupTransactions()).reduce((acc, [date, count]) => {
         if (date.startsWith(selectedMonth)) {
@@ -33,38 +44,34 @@ const TransactionCountChart = ({ orders }) => {
         }
         return acc;
       }, {})
-    : Object.entries(groupTransactions()).reduce((acc, [date, count]) => {
-        if (date.startsWith(selectedYear)) {
-          acc[date] = (acc[date] || 0) + count;
-        }
-        return acc;
-      }, {});
+    : getMonthlyData(selectedYear);
 
   const data = [{
     type: 'bar',
-    x: Object.keys(filteredTransactions),
-    y: Object.values(filteredTransactions),
+    x: viewType === 'Diario' ? Object.keys(filteredTransactions) : ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'],
+    y: viewType === 'Diario' ? Object.values(filteredTransactions) : filteredTransactions,
     marker: {
-      color: '#EFE8DD'
+      color: '#5E55FE'
     },
     hoverinfo: 'x+y',
     hovertemplate: '%{x}<br>%{y}<extra></extra>',
   }];
 
-  const annotations = Object.entries(filteredTransactions).map(([key, value]) => ({
-    x: key,
-    y: value,
-    text: `${value}`,
-    xanchor: 'center',
-    yanchor: 'bottom',
-    showarrow: false,
-    font: {
-      family: 'Poppins',
-      size: 15,
-      color: 'black',
-      weight: 'bold',
-    },
-  }));
+  const annotations = (viewType === 'Diario' ? Object.entries(filteredTransactions) : filteredTransactions.map((value, index) => ([index, value])))
+    .map(([key, value]) => ({
+      x: viewType === 'Diario' ? key : ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'][key],
+      y: value,
+      text: `${value}`,
+      xanchor: 'center',
+      yanchor: 'bottom',
+      showarrow: false,
+      font: {
+        family: 'Poppins',
+        size: 15,
+        color: 'black',
+        weight: 'bold',
+      },
+    }));
 
   const layout = {
     font: {

@@ -28,6 +28,8 @@ const OtrosGastos = () => {
   const [gastos, setGastos] = useState([]);
   const [editGasto, setEditGasto] = useState(null);
   const [mesSeleccionado, setMesSeleccionado] = useState('Todos');
+  const [tipoGastoSeleccionado, setTipoGastoSeleccionado] = useState('Todos');
+  const [tiposDeGasto, setTiposDeGasto] = useState([]);
   const [viewAsTable, setViewAsTable] = useState(false);
 
   useEffect(() => {
@@ -37,7 +39,10 @@ const OtrosGastos = () => {
   const fetchGastos = async () => {
     try {
       const response = await apiClient.get('/gastos');
-      setGastos(response.data);
+      const gastosData = response.data;
+      setGastos(gastosData);
+      const tipos = ['Todos', ...new Set(gastosData.map(gasto => gasto.tipo_gasto))];
+      setTiposDeGasto(tipos);
     } catch (error) {
       console.error('Error al obtener los gastos:', error);
     }
@@ -50,6 +55,7 @@ const OtrosGastos = () => {
 
   const handleClose = () => {
     setOpen(false);
+    setEditGasto(null);  // Asegúrate de limpiar el estado de edición
   };
 
   const handleSaveGasto = (gasto) => {
@@ -84,7 +90,15 @@ const OtrosGastos = () => {
     return gastos.filter(gasto => new Date(gasto.fecha).getMonth() === mesIndex);
   };
 
-  const gastosFiltrados = filtrarGastosPorMes(gastos, mesSeleccionado);
+  const filtrarGastosPorTipo = (gastos, tipo) => {
+    if (tipo === 'Todos') {
+      return gastos;
+    }
+    return gastos.filter(gasto => gasto.tipo_gasto === tipo);
+  };
+
+  const gastosFiltradosPorMes = filtrarGastosPorMes(gastos, mesSeleccionado);
+  const gastosFiltrados = filtrarGastosPorTipo(gastosFiltradosPorMes, tipoGastoSeleccionado);
 
   const totalGastadoFiltrado = gastosFiltrados.reduce((acc, gasto) => acc + gasto.monto, 0);
 
@@ -171,6 +185,21 @@ const OtrosGastos = () => {
             >
               {meses.map((mes, index) => (
                 <MenuItem key={index} value={mes}>{mes}</MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </Grid>
+        <Grid item>
+          <FormControl sx={{ mt: 2, minWidth: 120 }}>
+            <InputLabel id="tipo-gasto-select-label">Tipo de Gasto</InputLabel>
+            <Select
+              labelId="tipo-gasto-select-label"
+              value={tipoGastoSeleccionado}
+              onChange={(e) => setTipoGastoSeleccionado(e.target.value)}
+              label="Tipo de Gasto"
+            >
+              {tiposDeGasto.map((tipo, index) => (
+                <MenuItem key={index} value={tipo}>{tipo}</MenuItem>
               ))}
             </Select>
           </FormControl>

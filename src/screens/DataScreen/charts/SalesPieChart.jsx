@@ -2,21 +2,24 @@ import React from 'react';
 import Plot from 'react-plotly.js';
 import { Typography } from '@mui/material';
 
-const SalesPieChart = ({ orders }) => {
+const SalesPieChart = ({ orders, productsMap }) => {
   const productSalesValue = {};
+  let totalSales = 0;
 
   orders.forEach(order => {
     try {
       const productos = JSON.parse(order.productos);
       productos.forEach(product => {
-        const productName = product.name || product.id;
+        const productName = productsMap[product.id] || product.id;
         const productValue = product.price || 0;
         const quantity = product.quantity || 1;
 
+        totalSales += productValue * quantity;
+
         if (productSalesValue[productName]) {
-          productSalesValue[productName] += (productValue * quantity);
+          productSalesValue[productName] += productValue * quantity;
         } else {
-          productSalesValue[productName] = (productValue * quantity);
+          productSalesValue[productName] = productValue * quantity;
         }
       });
     } catch (error) {
@@ -33,7 +36,8 @@ const SalesPieChart = ({ orders }) => {
     marker: {
       colors: ['#4285F4', '#DB4437', '#F4B400', '#0F9D58', '#AB47BC', '#00ACC1', '#FF7043', '#9E9D24'],
     },
-    hoverinfo: 'label+value'
+    hoverinfo: 'label+value',
+    text: Object.values(productSalesValue).map(value => `${((value / totalSales) * 100).toFixed(2)}%`),
   }];
 
   const layout = {
@@ -64,5 +68,3 @@ const SalesPieChart = ({ orders }) => {
 };
 
 export default SalesPieChart;
-
-
