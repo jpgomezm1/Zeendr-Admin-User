@@ -1,7 +1,7 @@
 import axios from 'axios';
 import store from './redux/store';
 
-axios.defaults.baseURL = 'https://zeendr-app-b1cfca69f998.herokuapp.com';
+axios.defaults.baseURL = process.env.REACT_APP_BACKEND_URL;
 
 axios.interceptors.request.use(
   config => {
