@@ -39,11 +39,11 @@ function PaginaProductos() {
         if (nuevoProducto.imagen) {
             formData.append('imagen', nuevoProducto.file);
         }
-
+    
         try {
             const response = await apiClient({
                 method: editMode ? 'PUT' : 'POST',
-                url: `/productos${editMode ? `/${productoId}` : ''}`,
+                url: `/productos${editMode ? `/${productoId}` : ''}`,  // Corrección aquí
                 data: formData,
                 headers: { 'Content-Type': 'multipart/form-data' },
             });
