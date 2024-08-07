@@ -1,9 +1,11 @@
 import React from 'react';
-import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Box } from '@mui/material';
+import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Box, IconButton } from '@mui/material';
 import { styled } from '@mui/system';
 import PaymentMethodCell from './PaymentMethodCell';
 import EstadoCell from './EstadoCell';
 import ProductosCell from './ProductosCell';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
 import './DeliveryScreen.css';
 
 const formatCurrency = (value) => {
@@ -36,33 +38,32 @@ const getRowClassName = (estado) => {
   }
 };
 
-const OrderTable = ({ orders, onOpenComprobanteDialog, onEstadoChange, onOpenProductosDialog }) => {
+const OrderTable = ({ orders, onOpenComprobanteDialog, onEstadoChange, onOpenProductosDialog, onEditOrder, onDeleteOrder }) => {
   return (
     <Box sx={{ height: 'auto', width: '100%', padding: 2 }}>
       <Paper sx={{ width: '100%', mb: 2 }}>
-        <TableContainer>
+      <TableContainer component={Paper} sx={{ marginTop: 3, borderRadius: 2, maxWidth: '100%', overflowX: 'auto' }}>
           <Table>
             <TableHead>
               <TableRow>
                 <StyledTableCell>Nombre</StyledTableCell>
-                <StyledTableCell>Teléfono</StyledTableCell>
                 <StyledTableCell>Dirección</StyledTableCell>
                 <StyledTableCell>Fecha</StyledTableCell>
-                <StyledTableCell>Fecha Entrega</StyledTableCell>
+                <StyledTableCell>Entrega</StyledTableCell>
                 <StyledTableCell>Rango Horas</StyledTableCell>
-                <StyledTableCell>$ Productos</StyledTableCell>
-                <StyledTableCell>$ Domicilio</StyledTableCell>
-                <StyledTableCell>$ Total</StyledTableCell>
+                <StyledTableCell>Total Productos</StyledTableCell>
+                <StyledTableCell>Total Domicilio</StyledTableCell>
+                <StyledTableCell>Total Venta</StyledTableCell>
                 <StyledTableCell>Productos</StyledTableCell>
                 <StyledTableCell>Método de Pago</StyledTableCell>
                 <StyledTableCell>Estado</StyledTableCell>
+                <StyledTableCell>Acciones</StyledTableCell>
               </TableRow>
             </TableHead>
             <TableBody>
               {orders.map((row) => (
                 <TableRow key={row.id} className={getRowClassName(row.estado)}>
                   <TableCell>{row.nombre_completo}</TableCell>
-                  <TableCell>{row.numero_telefono}</TableCell>
                   <TableCell>{row.direccion}</TableCell>
                   <TableCell>{row.fecha}</TableCell>
                   <TableCell>{row.fecha_entrega || 'No programada'}</TableCell>
@@ -78,6 +79,14 @@ const OrderTable = ({ orders, onOpenComprobanteDialog, onEstadoChange, onOpenPro
                   </TableCell>
                   <TableCell>
                     <EstadoCell value={row.estado} row={row} onEstadoChange={onEstadoChange} />
+                  </TableCell>
+                  <TableCell>
+                    <IconButton onClick={() => onEditOrder(row.id)}>
+                      <EditIcon />
+                    </IconButton>
+                    <IconButton onClick={() => onDeleteOrder(row.id)}>
+                      <DeleteIcon />
+                    </IconButton>
                   </TableCell>
                 </TableRow>
               ))}

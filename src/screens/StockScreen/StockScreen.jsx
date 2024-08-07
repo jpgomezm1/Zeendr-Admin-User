@@ -1,5 +1,20 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Button, Container, CircularProgress, Grid, TextField, Typography, Card, CardContent, IconButton, InputAdornment } from '@mui/material';
+import {
+  Box,
+  Button,
+  Container,
+  CircularProgress,
+  Grid,
+  TextField,
+  Typography,
+  Card,
+  CardContent,
+  IconButton,
+  InputAdornment,
+  Switch,
+  FormControlLabel,
+  useTheme
+} from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import SaveIcon from '@mui/icons-material/Save';
 import CancelIcon from '@mui/icons-material/Cancel';
@@ -7,7 +22,10 @@ import SearchIcon from '@mui/icons-material/Search';
 import { styled } from '@mui/system';
 import InventoryDialog from './InventoryDialog';
 import MovimientosDialog from './MovimientosDialog';
-import { apiClient } from '../../apiClient';  // Importa el apiClient configurado
+import { apiClient } from '../../apiClient';
+import InventoryTable from './InventoryTable'; // Importa el componente InventoryTable
+
+import EntregasIcon from '../../assets/icons/entregas.png';
 
 const primaryColor = '#5E55FE';
 
@@ -39,6 +57,7 @@ const formatCurrency = (value) => {
 };
 
 const StockScreen = () => {
+  const theme = useTheme();
   const [productos, setProductos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [stockChanges, setStockChanges] = useState({});
@@ -46,6 +65,7 @@ const StockScreen = () => {
   const [search, setSearch] = useState('');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [movimientosDialogOpen, setMovimientosDialogOpen] = useState(false);
+  const [isTableView, setIsTableView] = useState(false); // Nuevo estado para controlar la vista
 
   useEffect(() => {
     fetchProductos();
@@ -118,7 +138,7 @@ const StockScreen = () => {
         cambiosStock: cambiosStock
       });
       alert(response.data.mensaje);
-      fetchProductos();  // Actualiza la lista de productos después del movimiento
+      fetchProductos();
     } catch (error) {
       console.error('Error al registrar los movimientos de inventario', error);
       alert('Error al registrar los movimientos de inventario');
@@ -130,11 +150,15 @@ const StockScreen = () => {
   );
 
   return (
-    <Container maxWidth="xl" style={{  minHeight: '100vh', paddingTop: '20px' }}>
-      <Typography variant="h4" gutterBottom sx={{ textAlign: 'left', fontWeight: 'bold' }}>
-        Gestión de Inventarios
-      </Typography>
+    <Box sx={{ padding: 2, borderRadius: 2, maxWidth: '1200px', margin: '0 auto', width: '100%' }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', marginBottom: 4 }}>
+        <img src={EntregasIcon} alt="Gestión de Pedidos" style={{ width: 70, height: 70, marginRight: theme.spacing(2) }} />
+        <Typography variant="h3" style={{ fontFamily: 'Providence Sans Pro', fontWeight: 'bold' }}>
+          Bodega de los Caprichos 
+        </Typography>
+      </Box>
       <TextField
+      sx={{ mb: 3 }}
         variant="outlined"
         placeholder="Buscar producto"
         fullWidth
@@ -149,6 +173,16 @@ const StockScreen = () => {
           ),
         }}
       />
+      <FormControlLabel
+        control={
+          <Switch
+            checked={isTableView}
+            onChange={() => setIsTableView(!isTableView)}
+            color="primary"
+          />
+        }
+        label="Vista en Tabla"
+      />
       <Button variant="contained" onClick={handleDialogOpen} size="medium" sx={{my: 2, backgroundColor: '#5E55FE', color: 'white', borderRadius: '10px', '&:hover': { backgroundColor: '#7b45a1' }, mr: 1}}>
         Registrar Movimiento de Inventario
       </Button>
@@ -158,45 +192,58 @@ const StockScreen = () => {
       {loading ? (
         <CircularProgress />
       ) : (
-        <Grid container spacing={3}>
-          {filteredProductos.map(producto => (
-            <Grid item xs={12} sm={6} md={4} key={producto.id}>
-              <StyledCard>
-                <CardContent>
-                  <Typography variant="h5">{producto.nombre}</Typography>
-                  <Typography variant="body1">Precio: {formatCurrency(producto.precio)}</Typography>
-                  <Typography variant="body2">Categoría: {producto.categoria}</Typography>
-                  {editing[producto.id] ? (
-                    <>
-                      <TextField
-                        label="Stock"
-                        type="number"
-                        variant="outlined"
-                        fullWidth
-                        margin="normal"
-                        value={stockChanges[producto.id] !== undefined ? stockChanges[producto.id] : producto.stock}
-                        onChange={(e) => handleStockChange(producto.id, e.target.value)}
-                      />
-                      <IconButton onClick={() => handleSaveStock(producto.id)} sx={{ color: '#5E55FE'}}>
-                        <SaveIcon />
-                      </IconButton>
-                      <IconButton onClick={() => handleCancelClick(producto.id)} color="secondary">
-                        <CancelIcon />
-                      </IconButton>
-                    </>
-                  ) : (
-                    <>
-                      <Typography variant="body1">Stock: {producto.stock !== undefined && producto.stock !== null ? producto.stock : 0}</Typography>
-                      <IconButton onClick={() => handleEditClick(producto.id)} sx={{ color: '#5E55FE'}}>
-                        <EditIcon />
-                      </IconButton>
-                    </>
-                  )}
-                </CardContent>
-              </StyledCard>
-            </Grid>
-          ))}
-        </Grid>
+        isTableView ? (
+          <InventoryTable
+          productos={filteredProductos}
+          handleStockChange={handleStockChange}
+          handleSaveStock={handleSaveStock}
+          handleCancelClick={handleCancelClick}
+          handleEditClick={handleEditClick}
+          editing={editing}
+          stockChanges={stockChanges}
+          formatCurrency={formatCurrency}
+          />
+        ) : (
+          <Grid container spacing={3} sx={{ mt: 2}}>
+            {filteredProductos.map(producto => (
+              <Grid item xs={12} sm={6} md={4} key={producto.id}>
+                <StyledCard>
+                  <CardContent>
+                    <Typography variant="h5">{producto.nombre}</Typography>
+                    <Typography variant="body1">Precio: {formatCurrency(producto.precio)}</Typography>
+                    <Typography variant="body2">Categoría: {producto.categoria}</Typography>
+                    {editing[producto.id] ? (
+                      <>
+                        <TextField
+                          label="Stock"
+                          type="number"
+                          variant="outlined"
+                          fullWidth
+                          margin="normal"
+                          value={stockChanges[producto.id] !== undefined ? stockChanges[producto.id] : producto.stock}
+                          onChange={(e) => handleStockChange(producto.id, e.target.value)}
+                        />
+                        <IconButton onClick={() => handleSaveStock(producto.id)} sx={{ color: '#5E55FE'}}>
+                          <SaveIcon />
+                        </IconButton>
+                        <IconButton onClick={() => handleCancelClick(producto.id)} color="secondary">
+                          <CancelIcon />
+                        </IconButton>
+                      </>
+                    ) : (
+                      <>
+                        <Typography variant="body1">Stock: {producto.stock !== undefined && producto.stock !== null ? producto.stock : 0}</Typography>
+                        <IconButton onClick={() => handleEditClick(producto.id)} sx={{ color: '#5E55FE'}}>
+                          <EditIcon />
+                        </IconButton>
+                      </>
+                    )}
+                  </CardContent>
+                </StyledCard>
+              </Grid>
+            ))}
+          </Grid>
+        )
       )}
       <InventoryDialog
         open={dialogOpen}
@@ -208,8 +255,10 @@ const StockScreen = () => {
         open={movimientosDialogOpen}
         handleClose={handleMovimientosDialogClose}
       />
-    </Container>
+    </Box>
   );
 };
 
 export default StockScreen;
+
+

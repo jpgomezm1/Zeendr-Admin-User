@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Box, CircularProgress, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from '@mui/material';
+import { Box, CircularProgress, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, useTheme } from '@mui/material';
 import { styled } from '@mui/system';
 import deliveryCosts from '../../data/barrios';
 import { apiClient } from '../../apiClient';  // Importa el apiClient configurado
+
+import ClientIcon from '../../assets/icons/clientes.png';
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
   backgroundColor: theme.palette.common.black,
@@ -11,6 +13,7 @@ const StyledTableCell = styled(TableCell)(({ theme }) => ({
 }));
 
 const ClientsScreen = () => {
+  const theme = useTheme();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [clients, setClients] = useState([]);
@@ -72,16 +75,19 @@ const ClientsScreen = () => {
   };
 
   return (
-    <Box sx={{ p: 4 }}>
+    <Box sx={{ padding: 2, borderRadius: 2, maxWidth: '1200px', margin: '0 auto', width: '100%' }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', marginBottom: 4 }}>
+        <img src={ClientIcon} alt="Gestión de Pedidos" style={{ width: 70, height: 70, marginRight: theme.spacing(2) }} />
+        <Typography variant="h3" style={{ fontFamily: 'Providence Sans Pro', fontWeight: 'bold' }}>
+            Tu Escuadrón de Leales
+        </Typography>
+      </Box>
       {loading ? (
         <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
           <CircularProgress />
         </Box>
       ) : (
         <>
-          <Typography variant="h4" gutterBottom sx={{ textAlign: 'left', fontWeight: 'bold' }}>
-            CRM de Clientes
-          </Typography>
           <TableContainer component={Paper}>
             <Table>
               <TableHead>

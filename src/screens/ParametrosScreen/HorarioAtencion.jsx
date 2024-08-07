@@ -11,6 +11,7 @@ const primaryColor = '#5E55FE';
 const StyledButton = styled(Button)(({ theme }) => ({
   backgroundColor: primaryColor,
   color: theme.palette.common.white,
+  borderRadius: '18px',
   textTransform: 'none',
   '&:hover': {
     backgroundColor: '#7b45a1',
@@ -90,9 +91,7 @@ const HorarioAtencion = () => {
 
   return (
     <Box component={Paper} sx={{ p: 4, maxWidth: 800, margin: 'auto' }}>
-      <Typography variant="h6" gutterBottom>
-        Definir Horarios de Atención
-      </Typography>
+      <Typography variant="h5" sx={{ mb: 2 }}>Administrar Horarios de Atencion</Typography>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
         <TextField
           select

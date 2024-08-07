@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField, Paper, IconButton } from '@mui/material';
+import { Box, Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField, Paper, IconButton, Typography } from '@mui/material';
 import { styled } from '@mui/system';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
@@ -15,11 +15,11 @@ const StyledTableCell = styled(TableCell)(({ theme }) => ({
 }));
 
 const StyledIconButton = styled(IconButton)(({ theme }) => ({
-  color: primaryColor,
+  color: '#5E55FE',
 }));
 
 const StyledButton = styled(Button)(({ theme }) => ({
-  backgroundColor: primaryColor,
+  backgroundColor: '#5E55FE',
   textTransform: 'none',
   color: theme.palette.common.white,
   '&:hover': {
@@ -102,7 +102,7 @@ const CategoriaTable = () => {
 
   return (
     <Box sx={{ p: 4 }}>
-      <h1>Configurar Categorías del Menú</h1>
+      <Typography variant="h5" sx={{ mb: 2 }}>Administrar Categorias del Menu</Typography>
       <TableContainer component={Paper}>
         <Table>
           <TableHead>
@@ -154,7 +154,7 @@ const CategoriaTable = () => {
                 />
               </TableCell>
               <TableCell align="right">
-                <StyledButton variant="contained" onClick={handleAddCategoria}>
+                <StyledButton variant="contained" onClick={handleAddCategoria} sx={{ borderRadius: '18px' }}>
                   Agregar Categoría
                 </StyledButton>
               </TableCell>

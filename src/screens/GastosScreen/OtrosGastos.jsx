@@ -161,7 +161,6 @@ const OtrosGastos = () => {
 
   return (
     <Box sx={{ p: 2 }}>
-      <Typography variant="h5" sx={{ color: '#5E55FE', fontWeight: 'bold' }}>Otros Gastos</Typography>
       <KPICard title="Total Gastos" value={formatCurrency(totalGastadoFiltrado)} />
       <Grid container spacing={2} alignItems="center">
         <Grid item>

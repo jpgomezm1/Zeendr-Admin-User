@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Paper, Typography, Grid } from '@mui/material';
+import { Box, Typography, Grid, useTheme } from '@mui/material';
 
 const formatCurrency = (value) => {
   return new Intl.NumberFormat('es-CO', {
@@ -19,15 +19,30 @@ const getMonthName = (date) => {
 };
 
 const SummaryCard = ({ title, value }) => {
+  const theme = useTheme();
+
+  const cardStyles = {
+    padding: 2,
+    borderRadius: 2,
+    boxShadow: 3,
+    textAlign: 'center',
+    color: 'white',
+    padding: theme.spacing(2),
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    background: 'linear-gradient(135deg, #7B11F5, #A46BF5)',
+  };
+
   return (
-    <Paper sx={{ padding: 2, textAlign: 'center', backgroundColor: '#E3F2FD', border: '1px solid black', boxShadow: '0px 4px 10px rgba(0, 0, 0, 0.1)', borderRadius: '16px' }}>
-      <Typography variant="h6" component="div" sx={{ fontWeight: 'bold' }}>
+    <Box sx={cardStyles}>
+      <Typography variant="h6" component="div" sx={{ fontWeight: 600, fontFamily: 'Poppins' }}>
         {title}
       </Typography>
-      <Typography variant="h5" component="div" color="primary" sx={{ fontWeight: 'bold' }}>
+      <Typography variant="h5" component="div" sx={{ fontWeight: 400, fontFamily: 'Poppins' }}>
         {value}
       </Typography>
-    </Paper>
+    </Box>
   );
 };
 
@@ -80,4 +95,3 @@ const SummaryGastos = ({ gastos }) => {
 };
 
 export default SummaryGastos;
-

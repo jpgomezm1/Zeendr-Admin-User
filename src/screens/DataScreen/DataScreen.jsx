@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Box, CircularProgress, Typography, Tabs, Tab, AppBar } from '@mui/material';
+import { Box, CircularProgress, Typography, Tabs, Tab, AppBar, useTheme } from '@mui/material';
 import SalesChart from './charts/SalesChart';
 import TransactionCountChart from './charts/TransactionCountChart';
 import SalesDataViewer from './SalesDataViewer';
@@ -15,7 +15,10 @@ import MargenChart from './charts/MargenChart';
 import MargenOperativoChart from './charts/MargenOperativoChart';
 import IngresosGastosChart from './charts/IngresosGastosChart';
 
+import DataIcon from '../../assets/icons/data.png';
+
 const DataScreen = () => {
+  const theme = useTheme();
   const [orders, setOrders] = useState([]);
   const [gastos, setGastos] = useState([]);
   const [loadingOrders, setLoadingOrders] = useState(true);
@@ -157,10 +160,13 @@ const DataScreen = () => {
   const { ingresosMensuales, gastosMensuales } = calculateIngresosGastosMensuales();
 
   return (
-    <Box sx={{ p: 4 }}>
-      <Typography variant="h4" gutterBottom sx={{ textAlign: 'left', fontWeight: 'bold', color: '#5E55FE' }}>
-        Análisis de Datos
-      </Typography>
+    <Box sx={{ padding: 2, borderRadius: 2, maxWidth: '1200px', margin: '0 auto', width: '100%' }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', marginBottom: 4 }}>
+        <img src={DataIcon} alt="Gestión de Pedidos" style={{ width: 70, height: 70, marginRight: theme.spacing(2) }} />
+        <Typography variant="h3" style={{ fontFamily: 'Providence Sans Pro', fontWeight: 'bold' }}>
+           El Centro de Inteligencia
+        </Typography>
+      </Box>
       <AppBar position="static" sx={{ backgroundColor: 'transparent', boxShadow: 'none', borderBottom: '2px solid #5E55FE' }}>
         <Tabs
           value={currentTab}

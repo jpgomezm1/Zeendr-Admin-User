@@ -1,17 +1,22 @@
 import React, { useState, useEffect } from 'react';
-import { Button, Grid, Container, CircularProgress } from '@mui/material';
+import { Button, Grid, CircularProgress, Switch, Typography, Box, useTheme } from '@mui/material';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import ProductoCard from '../../components/ProductCard/ProductCard';
 import ProductoDialog from '../../components/ProductDialog/ProductDialog';
-import { apiClient } from '../../apiClient';  // Importa el apiClient configurado
+import ProductoTable from './ProductTable';
+import { apiClient } from '../../apiClient';
+
+import ProductosIcon from '../../assets/icons/productos.png';
 
 function PaginaProductos() {
+    const theme = useTheme();
     const [open, setOpen] = useState(false);
     const [productos, setProductos] = useState([]);
     const [nuevoProducto, setNuevoProducto] = useState({ nombre: '', precio: '', imagen: null, categoria: '', descripcion: '', descuento: 0 });
     const [editMode, setEditMode] = useState(false);
     const [productoId, setProductoId] = useState(null);
     const [loading, setLoading] = useState(false);
+    const [viewMode, setViewMode] = useState('cards'); // Estado para controlar el modo de vista
 
     useEffect(() => {
         fetchProductos();
@@ -35,7 +40,7 @@ function PaginaProductos() {
         formData.append('precio', nuevoProducto.precio);
         formData.append('categoria', nuevoProducto.categoria);
         formData.append('descripcion', nuevoProducto.descripcion || '');
-        formData.append('descuento', nuevoProducto.descuento);  // Añadir descuento
+        formData.append('descuento', nuevoProducto.descuento);
         if (nuevoProducto.imagen) {
             formData.append('imagen', nuevoProducto.file);
         }
@@ -43,7 +48,7 @@ function PaginaProductos() {
         try {
             const response = await apiClient({
                 method: editMode ? 'PUT' : 'POST',
-                url: `/productos${editMode ? `/${productoId}` : ''}`,  // Corrección aquí
+                url: `/productos${editMode ? `/${productoId}` : ''}`,
                 data: formData,
                 headers: { 'Content-Type': 'multipart/form-data' },
             });
@@ -65,7 +70,7 @@ function PaginaProductos() {
             precio: producto.precio,
             categoria: producto.categoria,
             descripcion: producto.descripcion,
-            descuento: producto.descuento,  // Asegúrate de incluir el descuento
+            descuento: producto.descuento,
             imagen: null
         });
         setProductoId(producto.id);
@@ -105,9 +110,18 @@ function PaginaProductos() {
         }
     };
 
+    const toggleViewMode = () => {
+        setViewMode((prevMode) => (prevMode === 'cards' ? 'table' : 'cards'));
+    };
+
     return (
-        <div style={{ backgroundColor: 'white', minHeight: '100vh' }}>
-            <Container maxWidth="xl">
+           <Box sx={{ padding: 2, borderRadius: 2, maxWidth: '1200px', margin: '0 auto', width: '100%' }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', marginBottom: 4 }}>
+               <img src={ProductosIcon} alt="Gestión de Pedidos" style={{ width: 70, height: 70, marginRight: theme.spacing(2)}} />
+               <Typography variant="h3" style={{ fontFamily: 'Providence Sans Pro', fontWeight: 'bold' }}>
+                  Galeria de Caprichos
+               </Typography>
+             </Box>
                 <Button 
                     startIcon={<AddCircleOutlineIcon />} 
                     onClick={handleClickOpen} 
@@ -117,13 +131,31 @@ function PaginaProductos() {
                 >
                     Agregar Producto
                 </Button>
-                {loading ? <CircularProgress /> : (
-                    <Grid container spacing={3} justifyContent="center" alignItems="center" sx={{ mt: 5 }}>
-                        {productos.map((producto, index) => (
-                            <ProductoCard key={index} producto={producto} onDelete={handleDelete} onEdit={handleEdit} />
-                        ))}
-                    </Grid>
+
+                <Typography component="div" sx={{ display: 'flex', alignItems: 'center', mt: 2 }}>
+                    <Switch
+                        checked={viewMode === 'table'}
+                        onChange={toggleViewMode}
+                        color="primary"
+                        inputProps={{ 'aria-label': 'Toggle view mode' }}
+                    />
+                    {viewMode === 'table' ? 'Vista de Tabla' : 'Vista de Tarjetas'}
+                </Typography>
+
+                {loading ? (
+                    <CircularProgress />
+                ) : (
+                    viewMode === 'cards' ? (
+                        <Grid container spacing={3} justifyContent="center" alignItems="center" sx={{ mt: 5 }}>
+                            {productos.map((producto, index) => (
+                                <ProductoCard key={index} producto={producto} onDelete={handleDelete} onEdit={handleEdit} />
+                            ))}
+                        </Grid>
+                    ) : (
+                        <ProductoTable productos={productos} onDelete={handleDelete} onEdit={handleEdit} />
+                    )
                 )}
+
                 <ProductoDialog
                     open={open}
                     handleClose={handleClose}
@@ -133,11 +165,9 @@ function PaginaProductos() {
                     loading={loading}
                     editMode={editMode}
                 />
-            </Container>
-        </div>
+            </Box>
     );
 }
 
 export default PaginaProductos;
-
 

@@ -1,15 +1,18 @@
 import React from 'react';
-import {Container, Typography, Box, Paper, TextField, Button, Stack, Select, MenuItem, InputLabel, FormControl, Accordion, AccordionSummary, AccordionDetails, Link} from '@mui/material';
+import {Container, Typography, Box, Paper, TextField, Button, Stack, Select, MenuItem, InputLabel, FormControl, Accordion, AccordionSummary, AccordionDetails, Link, useTheme} from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import WhatsAppIcon from '@mui/icons-material/WhatsApp';
 import { faqs } from './faqs';
-import companyLogo from '../../assets/logo33.png';
+import companyLogo from '../../assets/irr-texto.png';
 import LinkedInIcon from '@mui/icons-material/LinkedIn';
 import TwitterIcon from '@mui/icons-material/Twitter';
 import InstagramIcon from '@mui/icons-material/Instagram';
 
+import SoporteIcon from '../../assets/icons/soporte.png';
+
 
 function SoporteScreen() {
+  const theme = useTheme();
   const [subject, setSubject] = React.useState('');
   const [customSubject, setCustomSubject] = React.useState(''); // Estado adicional para el asunto personalizado
   const [message, setMessage] = React.useState('');
@@ -64,10 +67,13 @@ function SoporteScreen() {
 
   return (
     <Container maxWidth="xl">
+      <Box sx={{ display: 'flex', alignItems: 'center', marginBottom: 4 }}>
+        <img src={SoporteIcon} alt="Gestión de Pedidos" style={{ width: 70, height: 70, marginRight: theme.spacing(2) }} />
+        <Typography variant="h3" style={{ fontFamily: 'Providence Sans Pro', fontWeight: 'bold' }}>
+           Centro de Respuestas
+        </Typography>
+      </Box>
       <Paper elevation={3} sx={{ p: 4, mt: 4 }}>
-      <Typography variant="h4" gutterBottom sx={{ textAlign: 'left', fontWeight: 'bold' }}>
-        Centro de Soporte
-      </Typography>
         <Box component="form" onSubmit={handleSubmit} noValidate>
           <FormControl fullWidth margin="normal">
             <InputLabel id="subject-label">Asunto</InputLabel>
@@ -161,10 +167,7 @@ function SoporteScreen() {
       </Box>
 
       <Box mt={5} py={3} display="flex" alignItems="center" justifyContent="center" flexDirection="column">
-        <Typography variant="body2" color="textSecondary" gutterBottom>
-          Powered by
-        </Typography>
-        <img src={companyLogo} alt="Company Logo" style={{ width: '140px', height: 'auto' }} />
+        <img src={companyLogo} alt="Company Logo" style={{ width: '240px', height: 'auto', mt: -4 }} />
         <Box mt={2}>
           <Link href="https://www.linkedin.com/in/yourprofile" target="_blank" rel="noopener noreferrer">
             <LinkedInIcon sx={{ mx: 1, color: 'black', '&:hover': { transform: 'scale(1.2)' } }} />

@@ -102,10 +102,6 @@ function GastosProveedores() {
 
   return (
     <Container>
-      <Typography variant="h5" sx={{ color: '#5E55FE', fontWeight: 'bold', textAlign: 'center', mb: 4 }}>
-        Gastos en Proveedores
-      </Typography>
-
       <Grid container spacing={2} justifyContent="center" sx={{ mb: 4 }}>
         <Grid item xs={12} md={6}>
           <KPICard title="Total Gastado" value={formatCurrency(totalFilteredGastado)} />

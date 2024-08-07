@@ -78,7 +78,7 @@ const MensajeWhatsApp = () => {
 
   return (
     <Box component={Paper} sx={{ p: 4, maxWidth: 900, margin: 'auto' }}>
-      <h1>Mensajes de WhatsApp Personalizados</h1>
+      <Typography variant="h5" sx={{ mb: 2 }}>Administrar Mensajes de Whatsapp</Typography>
       <ExampleAccordion>
         <AccordionSummary
           expandIcon={<ExpandMoreIcon />}

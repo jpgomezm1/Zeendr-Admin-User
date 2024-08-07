@@ -20,9 +20,22 @@ function ProductoCard({ producto, onDelete, onEdit }) {
 
   return (
     <Grid item xs={12} sm={6} md={4}>
-      <ProductCard>
+      <ProductCard style={{ position: 'relative', zIndex: '1' }}>
         {producto.descuento > 0 && (
-          <div style={{ position: 'absolute', top: '10px', left: '10px', backgroundColor: 'red', color: 'white', padding: '5px', borderRadius: '5px' }}>
+          <div style={{
+            position: 'absolute',
+            top: '10px',
+            left: '10px',
+            backgroundColor: 'red',
+            color: 'white',
+            padding: '5px',
+            borderRadius: '5px',
+            zIndex: '2', // Asegura que el ícono de descuento tenga un z-index mayor
+            // Media query para ajustar la posición en pantallas pequeñas
+            '@media (max-width: 600px)': {
+              top: '40px', // Ajusta esto según la altura de tu Navbar
+            }
+          }}>
             <LocalOfferIcon /> {producto.descuento}%
           </div>
         )}

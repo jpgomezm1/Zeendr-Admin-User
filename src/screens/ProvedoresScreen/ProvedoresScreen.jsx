@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import {
-  Container, Typography, Grid, Button, CircularProgress, ToggleButton, ToggleButtonGroup, Box, Select, MenuItem, TextField, FormControl, InputLabel
+  Container, Typography, Grid, Button, CircularProgress, ToggleButton, ToggleButtonGroup, Box, Select, MenuItem, TextField, FormControl, InputLabel, useTheme
 } from '@mui/material';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart';
@@ -15,7 +15,10 @@ import PedidoDialog from './PedidoDialog';
 import PedidosList from './PedidosList'; // Importar el nuevo componente
 import { apiClient } from '../../apiClient'; // Importar el apiClient configurado
 
+import ProveedoresIcon from '../../assets/icons/proveedores.png';
+
 function ProveedoresScreen() {
+  const theme = useTheme();
   const [productosProveedor, setProductosProveedor] = useState([]);
   const [proveedores, setProveedores] = useState([]);
   const [categoriasProductos, setCategoriasProductos] = useState([]);
@@ -208,11 +211,14 @@ function ProveedoresScreen() {
 
   return (
     <Container>
-      <Typography variant="h4" gutterBottom sx={{ textAlign: 'center', fontWeight: 'bold' }}>
-        Centro de Proveedores
-      </Typography>
 
-      <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
+    <Box sx={{ padding: 2, borderRadius: 2, maxWidth: '1200px', margin: '0 auto', width: '100%' }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', marginBottom: 4 }}>
+        <img src={ProveedoresIcon} alt="Gestión de Pedidos" style={{ width: 70, height: 70, marginRight: theme.spacing(2) }} />
+        <Typography variant="h3" style={{ fontFamily: 'Providence Sans Pro', fontWeight: 'bold' }}>
+           El Escuadron de Suministros
+        </Typography>
+      </Box>
         <Button
           variant="contained"
           startIcon={<AddCircleOutlineIcon />}

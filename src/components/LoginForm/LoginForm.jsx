@@ -6,7 +6,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { login } from '../../redux/authSlice';
 import axios from 'axios';
 
-import logo from '../../assets/logo33.png';
+import logo from '../../assets/irr-texto.png';
 import backgroundImage from '../../assets/fondo.png';
 
 const LoginForm = () => {
@@ -71,7 +71,7 @@ const LoginForm = () => {
                     boxShadow: '0px 0px 10px rgba(0, 0, 0, 0.1)',
                 }}
             >
-                <img src={logo} alt="logo" style={{ width: '120px', marginBottom: '20px' }} />
+                <img src={logo} alt="logo" style={{ width: '150px' }} />
                 <Typography variant="h4" sx={{ fontFamily: 'Poppins', marginBottom: '20px', color: '#333', fontWeight: 'bold' }}>Ingresar</Typography>
                 <TextField
                     label="Usuario"

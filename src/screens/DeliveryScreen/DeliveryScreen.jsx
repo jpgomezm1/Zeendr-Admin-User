@@ -1,16 +1,21 @@
 import React, { useState, useEffect } from 'react';
-import { Box, CircularProgress, Select, MenuItem, FormControl, InputLabel, Stack, Button } from '@mui/material';
+import { Typography, Box, CircularProgress, Select, MenuItem, FormControl, InputLabel, Stack, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, useTheme } from '@mui/material';
 import OrderTable from './OrderTable';
 import Modals from './Modals';
 import SummaryCards from './SummaryCards';
 import AddOrderDialog from './AddOrderDialog';
+import EditOrderDialog from './EditOrderDialog';
 import './DeliveryScreen.css';
 import dayjs from 'dayjs';
 import { useSelector } from 'react-redux';
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
-import { apiClient } from '../../apiClient';  // Importa el apiClient configurado
+import { apiClient } from '../../apiClient';
+
+import ordenesIcon from '../../assets/icons/ordenes.png';
+
 
 const DeliveryScreen = () => {
+  const theme = useTheme();
   const [orders, setOrders] = useState([]);
   const [productsMap, setProductsMap] = useState({});
   const [loading, setLoading] = useState(true);
@@ -20,6 +25,10 @@ const DeliveryScreen = () => {
   const [selectedProductos, setSelectedProductos] = useState([]);
   const [selectedDate, setSelectedDate] = useState(dayjs().format('YYYY-MM-DD'));
   const [openAddOrderDialog, setOpenAddOrderDialog] = useState(false);
+  const [editingOrder, setEditingOrder] = useState(null);
+  const [openEditOrderDialog, setOpenEditOrderDialog] = useState(false);
+  const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
+  const [deletingOrderId, setDeletingOrderId] = useState(null);
   const token = useSelector((state) => state.auth.token);
 
   useEffect(() => {
@@ -84,6 +93,33 @@ const DeliveryScreen = () => {
     }
   };
 
+  const handleEditOrder = async (orderId) => {
+    const orderToEdit = orders.find(order => order.id === orderId);
+    setEditingOrder(orderToEdit);
+    setOpenEditOrderDialog(true);
+  };
+
+  const handleDeleteOrder = async () => {
+    if (deletingOrderId) {
+      try {
+        await apiClient.delete(`/pedido/${deletingOrderId}`);
+        setOrders(prevOrders => prevOrders.filter(order => order.id !== deletingOrderId));
+        setOpenDeleteDialog(false);  // Cerrar el diálogo después de eliminar
+      } catch (error) {
+        console.error('Error deleting order:', error);
+      }
+    }
+  };
+
+  const openDeleteConfirmation = (orderId) => {
+    setDeletingOrderId(orderId);
+    setOpenDeleteDialog(true);
+  };
+
+  const closeDeleteConfirmation = () => {
+    setOpenDeleteDialog(false);
+  };
+
   const handleDateChange = (event) => {
     setSelectedDate(event.target.value);
   };
@@ -120,6 +156,7 @@ const DeliveryScreen = () => {
         comprobante_pago: order.comprobante_pago,
         estado: order.estado,
         total: order.total_productos,
+        total_con_descuento: order.total_con_descuento,
         total_domicilio: order.costo_domicilio,
         total_venta: totalVenta
       };
@@ -150,8 +187,19 @@ const DeliveryScreen = () => {
     setOpenAddOrderDialog(false);
   };
 
+  const handleCloseEditOrderDialog = () => {
+    setOpenEditOrderDialog(false);
+    setEditingOrder(null);
+  };
+
   return (
-    <Box sx={{ p: 4 }}>
+    <Box sx={{ padding: 2, borderRadius: 2, maxWidth: '1400px', margin: '0 auto', width: '100%' }}>
+     <Box sx={{ display: 'flex', alignItems: 'center', marginBottom: 4 }}>
+        <img src={ordenesIcon} alt="Gestión de Pedidos" style={{ width: 70, height: 70, marginRight: theme.spacing(2) }} />
+        <Typography variant="h3" style={{ fontFamily: 'Providence Sans Pro', fontWeight: 'bold' }}>
+           Aqui Aterrizan los Caprichos
+        </Typography>
+      </Box>
       <SummaryCards
         totalVentas={totalVentas}
         totalProductos={totalProductos}
@@ -198,6 +246,8 @@ const DeliveryScreen = () => {
           onOpenComprobanteDialog={handleOpenComprobanteDialog}
           onEstadoChange={handleEstadoChange}
           onOpenProductosDialog={handleOpenProductosDialog}
+          onEditOrder={handleEditOrder}
+          onDeleteOrder={openDeleteConfirmation}
         />
       )}
       <Modals
@@ -216,6 +266,48 @@ const DeliveryScreen = () => {
         setOrders={setOrders} 
         token={token}  // Pasar el token al componente AddOrderDialog
       />
+      <EditOrderDialog 
+        open={openEditOrderDialog} 
+        order={editingOrder} 
+        handleClose={handleCloseEditOrderDialog}
+        setOrders={setOrders}
+      />
+      <Dialog
+         open={openDeleteDialog}
+         onClose={closeDeleteConfirmation}
+         aria-labelledby="alert-dialog-title"
+         aria-describedby="alert-dialog-description"
+       >
+         <DialogTitle id="alert-dialog-title">
+           <Box display="flex" alignItems="center">
+             <LocalShippingIcon sx={{ color: theme.palette.error.main, mr: 1 }} />
+             {"Confirmar Eliminación"}
+           </Box>
+         </DialogTitle>
+         <DialogContent>
+           <DialogContentText id="alert-dialog-description" sx={{ fontSize: '1rem' }}>
+             ¿Estás seguro de que deseas eliminar esta orden? Esta acción no se puede deshacer.
+           </DialogContentText>
+         </DialogContent>
+         <DialogActions>
+           <Button onClick={closeDeleteConfirmation} sx={{ color: theme.palette.text.secondary }}>
+             Cancelar
+           </Button>
+           <Button
+             onClick={handleDeleteOrder}
+             sx={{
+               backgroundColor: theme.palette.error.main,
+               color: theme.palette.getContrastText(theme.palette.error.main),
+               '&:hover': {
+                 backgroundColor: theme.palette.error.dark,
+               },
+             }}
+             autoFocus
+           >
+             Eliminar
+           </Button>
+         </DialogActions>
+       </Dialog>
     </Box>
   );
 };

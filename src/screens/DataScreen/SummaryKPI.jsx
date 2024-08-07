@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Paper, Typography, Grid } from '@mui/material';
+import { Box, Typography, Grid, useTheme } from '@mui/material';
 
 const formatCurrency = (value) => {
   return new Intl.NumberFormat('es-CO', {
@@ -19,32 +19,62 @@ const getMonthName = (date) => {
 };
 
 const SummaryCard = ({ title, value }) => {
+  const theme = useTheme();
+
+  const cardStyles = {
+    padding: 2,
+    borderRadius: 2,
+    boxShadow: 3,
+    textAlign: 'center',
+    color: 'white',
+    padding: theme.spacing(2),
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    background: 'linear-gradient(135deg, #7B11F5, #A46BF5)',
+  };
+
   return (
-    <Paper sx={{ padding: 2, textAlign: 'center', backgroundColor: '#E3F2FD', border: '1px solid black', boxShadow: '0px 4px 10px rgba(0, 0, 0, 0.1)', borderRadius: '16px' }}>
-      <Typography variant="h6" component="div" sx={{ fontWeight: 'bold' }}>
+    <Box sx={cardStyles}>
+      <Typography variant="h6" component="div" sx={{ fontWeight: 600, fontFamily: 'Poppins' }}>
         {title}
       </Typography>
-      <Typography variant="h5" component="div" color="primary" sx={{ fontWeight: 'bold' }}>
+      <Typography variant="h5" component="div" sx={{ fontWeight: 400, fontFamily: 'Poppins' }}>
         {value}
       </Typography>
-    </Paper>
+    </Box>
   );
 };
 
 const TopProductsCard = ({ title, products }) => {
+  const theme = useTheme();
+
+  const cardStyles = {
+    padding: 2,
+    borderRadius: 2,
+    boxShadow: 3,
+    textAlign: 'center',
+    color: 'white',
+    padding: theme.spacing(2),
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    background: 'linear-gradient(135deg, #7B11F5, #A46BF5)',
+  };
+
   return (
-    <Paper sx={{ padding: 2, backgroundColor: '#E3F2FD', border: '1px solid black', boxShadow: '0px 4px 10px rgba(0, 0, 0, 0.1)', borderRadius: '16px' }}>
-      <Typography variant="h6" component="div" sx={{ fontWeight: 'bold', textAlign: 'center' }}>
+    <Box sx={cardStyles}>
+      <Typography variant="h6" component="div" sx={{ fontWeight: 600, fontFamily: 'Poppins' }}>
         {title}
       </Typography>
       <Box sx={{ mt: 1 }}>
         {products.map((product, index) => (
-          <Typography key={index} variant="body1" sx={{ fontWeight: 'bold', color: 'primary.main', textAlign: 'center' }}>
+          <Typography key={index} variant="body1" sx={{ fontWeight: 600, fontFamily: 'Poppins', color: 'white' }}>
             {product}
           </Typography>
         ))}
       </Box>
-    </Paper>
+    </Box>
   );
 };
 
@@ -55,7 +85,6 @@ const SummaryKPI = ({ orders, productsMap }) => {
   const currentMonth = currentMonthDate.toISOString().slice(0, 7);
   const lastMonth = lastMonthDate.toISOString().slice(0, 7);
 
-  // Filtrar las órdenes por estado "Pedido Confirmado" y "Pedido Enviado"
   const filterOrdersByState = (orders) => {
     return orders.filter(order => order.estado === 'Pedido Confirmado' || order.estado === 'Pedido Enviado');
   };
@@ -129,6 +158,5 @@ const SummaryKPI = ({ orders, productsMap }) => {
 };
 
 export default SummaryKPI;
-
 
 

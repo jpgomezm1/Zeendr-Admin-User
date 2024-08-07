@@ -1,15 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Typography, Grid, Button, Tabs, Tab, AppBar } from '@mui/material';
+import { Box, Typography, Grid, Button, useTheme } from '@mui/material';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import ProductCardComponent from './ProductCardComponent';
 import CostDialogComponent from './CostDialogComponent';
 import NewProductCostDialogComponent from './NewProductCostDialogComponent';
 import RecipeDialogComponent from './RecipeDialogComponent';
-import ProductosIntermediosComponent from '../../components/ProductosIntermedios/ProductosIntermediosComponent';
-import TabPanel from '../GastosScreen/TabPanel';
 import { apiClient } from '../../apiClient';  // Importa el apiClient configurado
 
+import CostosIcon from '../../assets/icons/costos.png';
+
 const CostosScreen = () => {
+  const theme = useTheme();
   const [productos, setProductos] = useState([]);
   const [insumos, setInsumos] = useState([]);
   const [selectedProduct, setSelectedProduct] = useState(null);
@@ -19,7 +20,6 @@ const CostosScreen = () => {
   const [openNewProductDialog, setOpenNewProductDialog] = useState(false);
   const [openRecipeDialog, setOpenRecipeDialog] = useState(false);
   const [selectedRecipeProduct, setSelectedRecipeProduct] = useState(null);
-  const [tabIndex, setTabIndex] = useState(0); // New state for Tabs
 
   useEffect(() => {
     const fetchProductos = async () => {
@@ -144,84 +144,51 @@ const CostosScreen = () => {
     setOpenRecipeDialog(false);
   };
 
-  const handleTabChange = (event, newValue) => {
-    setTabIndex(newValue);
-  };
-
   return (
-    <Box sx={{ p: 4 }}>
-      <Typography variant="h4" gutterBottom sx={{ textAlign: 'left', fontWeight: 'bold', color: '#5E55FE' }}>
-        Centro de Costos y Estandarización
-      </Typography>
-      <AppBar position="static" sx={{ backgroundColor: 'transparent', boxShadow: 'none', borderBottom: '2px solid #5E55FE' }}>
-        <Tabs
-          value={tabIndex}
-          onChange={handleTabChange}
-          aria-label="costos tabs"
-          TabIndicatorProps={{ style: { backgroundColor: '#5E55FE', height: '4px' } }}
-          sx={{
-            '& .MuiTab-root': {
-              textTransform: 'none',
-              color: '#5E55FE',
-              fontWeight: 'bold',
-              fontSize: '1rem',
-              borderRadius: '8px 8px 0 0',
-              '&.Mui-selected': {
-                color: '#ffffff',
-                backgroundColor: '#5E55FE',
-              },
-            },
-            '& .MuiTabs-flexContainer': {
-              borderBottom: '1px solid #5E55FE',
-            },
-          }}
-        >
-          <Tab label="Productos Finales" />
-          <Tab label="Productos Intermedios" />
-        </Tabs>
-      </AppBar>
-      <TabPanel value={tabIndex} index={0}>
-        <Box>
-          <Button onClick={() => setOpenNewProductDialog(true)} sx={{ mt: 2, mb: 2, backgroundColor: '#5E55FE', color: 'white', borderRadius: '10px', '&:hover': { backgroundColor: '#7b45a1' }, }} variant="contained" startIcon={<AttachMoneyIcon />}>
-            Calcular el precio de un nuevo producto
-          </Button>
-          <Grid container spacing={2}>
-            {productos.map((producto) => (
-              <ProductCardComponent key={producto.id} producto={producto} handleOpenDialog={handleOpenDialog} handleOpenRecipeDialog={handleOpenRecipeDialog} />
-            ))}
-          </Grid>
+    <Box sx={{ padding: 2, borderRadius: 2, maxWidth: '1200px', margin: '0 auto', width: '100%' }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', marginBottom: 4 }}>
+        <img src={CostosIcon} alt="Gestión de Pedidos" style={{ width: 70, height: 70, marginRight: theme.spacing(2) }} />
+        <Typography variant="h3" style={{ fontFamily: 'Providence Sans Pro', fontWeight: 'bold' }}>
+            La Zona de Control
+        </Typography>
+      </Box>
+      <Box>
+        <Button onClick={() => setOpenNewProductDialog(true)} sx={{ mt: 2, mb: 2, backgroundColor: '#5E55FE', color: 'white', borderRadius: '10px', '&:hover': { backgroundColor: '#7b45a1' }, }} variant="contained" startIcon={<AttachMoneyIcon />}>
+          Calcular el precio de un nuevo producto
+        </Button>
+        <Grid container spacing={2}>
+          {productos.map((producto) => (
+            <ProductCardComponent key={producto.id} producto={producto} handleOpenDialog={handleOpenDialog} handleOpenRecipeDialog={handleOpenRecipeDialog} />
+          ))}
+        </Grid>
 
-          <CostDialogComponent
-            open={!!selectedProduct}
-            selectedProduct={selectedProduct}
-            selectedInsumos={selectedInsumos}
-            insumos={insumos}
-            costo={costo}
-            setCosto={setCosto}
-            unidadesProducidas={unidadesProducidas}
-            handleUnidadesProducidasChange={handleUnidadesProducidasChange}
-            handleCloseDialog={handleCloseDialog}
-            handleSaveCosto={handleSaveCosto}
-            handleAddInsumo={handleAddInsumo}
-            handleInsumoChange={handleInsumoChange}
-          />
-          
-          <NewProductCostDialogComponent
-            open={openNewProductDialog}
-            insumos={insumos}
-            handleCloseDialog={() => setOpenNewProductDialog(false)}
-          />
+        <CostDialogComponent
+          open={!!selectedProduct}
+          selectedProduct={selectedProduct}
+          selectedInsumos={selectedInsumos}
+          insumos={insumos}
+          costo={costo}
+          setCosto={setCosto}
+          unidadesProducidas={unidadesProducidas}
+          handleUnidadesProducidasChange={handleUnidadesProducidasChange}
+          handleCloseDialog={handleCloseDialog}
+          handleSaveCosto={handleSaveCosto}
+          handleAddInsumo={handleAddInsumo}
+          handleInsumoChange={handleInsumoChange}
+        />
+        
+        <NewProductCostDialogComponent
+          open={openNewProductDialog}
+          insumos={insumos}
+          handleCloseDialog={() => setOpenNewProductDialog(false)}
+        />
 
-          <RecipeDialogComponent
-            open={openRecipeDialog}
-            producto={selectedRecipeProduct}
-            handleCloseDialog={handleCloseRecipeDialog}
-          />
-        </Box>
-      </TabPanel>
-      <TabPanel value={tabIndex} index={1}>
-        <ProductosIntermediosComponent />
-      </TabPanel>
+        <RecipeDialogComponent
+          open={openRecipeDialog}
+          producto={selectedRecipeProduct}
+          handleCloseDialog={handleCloseRecipeDialog}
+        />
+      </Box>
     </Box>
   );
 };
