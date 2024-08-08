@@ -54,9 +54,9 @@ const ProtectedRoutes = () => {
   }
 
   return (
-    <Box sx={{ display: 'flex' }}>
+    <Box sx={{ display: 'flex', justifyContent: 'center' }}> {/* Centrar contenido */}
       <Navbar /> 
-      <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
+      <Box component="main" sx={{ flexGrow: 1, p: 3, width: '67%', maxWidth: '1200px' }}> {/* Ajustar tamaño del contenedor */}
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/orders" element={<DeliveryScreen />} />
@@ -88,6 +88,4 @@ const App = () => {
 };
 
 export default App;
-
-
 
