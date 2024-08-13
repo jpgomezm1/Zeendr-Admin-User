@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { Box, Typography, TextField, Button, Paper, CircularProgress, Alert, Snackbar } from '@mui/material';
 import { useSelector } from 'react-redux';
 import { apiClient } from '../../apiClient';
-import PriceChangeIcon from '@mui/icons-material/PriceChange'; // Importamos un icono representativo
 
 function DomicilioPrice() {
   const [domicilioPrice, setDomicilioPrice] = useState('');
@@ -37,7 +36,7 @@ function DomicilioPrice() {
     setErrorMessage('');
     try {
       await apiClient.post(
-        '/domicilio-price-auth',
+        '/domicilio-price',
         { price: domicilioPrice },
         { headers: { Authorization: `Bearer ${token}` } }
       );
