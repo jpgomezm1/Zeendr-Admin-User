@@ -7,7 +7,7 @@ import { login } from '../../redux/authSlice';
 import axios from 'axios';
 
 import logo from '../../assets/irr-texto.png';
-import backgroundImage from '../../assets/fondo.png';
+import backgroundImage from '../../assets/fondo-paper.jpg';
 
 const LoginForm = () => {
     const [showPassword, setShowPassword] = useState(false);
@@ -66,13 +66,10 @@ const LoginForm = () => {
                     width: '300px',
                     margin: '0 auto',
                     padding: '20px',
-                    backgroundColor: 'rgba(255, 255, 255, 0.9)',
                     borderRadius: '10px',
-                    boxShadow: '0px 0px 10px rgba(0, 0, 0, 0.1)',
                 }}
             >
-                <img src={logo} alt="logo" style={{ width: '150px' }} />
-                <Typography variant="h4" sx={{ fontFamily: 'Poppins', marginBottom: '20px', color: '#333', fontWeight: 'bold' }}>Ingresar</Typography>
+                <Typography variant="h3" sx={{ fontFamily: 'Providence Sans Pro', marginBottom: '20px', color: '#333', fontWeight: 'bold' }}>INGRESAR</Typography>
                 <TextField
                     label="Usuario"
                     variant="outlined"
@@ -105,10 +102,10 @@ const LoginForm = () => {
                     variant="contained"
                     color="primary"
                     sx={{
-                        backgroundColor: '#5E55FE', '&:hover': { backgroundColor: '#7b45a1' }, color: 'white', fontFamily: 'Poppins', borderRadius: '10px', textTransform: 'none', padding: '10px 7px', fontSize: '17px', marginTop: '7px', marginBottom: '5px', marginLeft: '7px', fontWeight: 'bold'
+                        backgroundColor: '#5E55FE', '&:hover': { backgroundColor: '#7b45a1' }, color: 'white', fontFamily: 'Providence Sans Pro', borderRadius: '10px', textTransform: 'none', padding: '10px 7px', fontSize: '25px', marginTop: '7px', marginBottom: '5px', marginLeft: '7px', fontWeight: 'bold'
                     }}
                 >
-                    Iniciar sesión
+                    Iniciar Sesion
                 </Button>
             </Box>
             <Snackbar open={snackbarOpen} autoHideDuration={6000} onClose={handleCloseSnackbar}>
