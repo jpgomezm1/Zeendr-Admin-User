@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Box, CssBaseline, Container } from '@mui/material';
-import { createTheme, ThemeProvider } from '@mui/material/styles';
+import { Box, CssBaseline, ThemeProvider } from '@mui/material';
+import { createTheme } from '@mui/material/styles';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import { useSelector } from 'react-redux';
-import './App.css'
+import './App.css';
 
 // Importamos los componentes
 import HomePage from './screens/HomePage/HomePage';
@@ -19,7 +19,9 @@ import StockScreen from './screens/StockScreen/StockScreen';
 import CostosScreen from './screens/CostosScreen/CostosScreen';
 import ProvedoresScreen from './screens/ProvedoresScreen/ProvedoresScreen';
 import GastosScreen from './screens/GastosScreen/GastosScreen';
+import DespachosScreen from './screens/DespachosScreen/DespachosScreen';
 import Loader from './components/Loader/Loader';
+import Whatsapp from './components/Whatsapp/Whatsapp';
 
 import { Provider } from 'react-redux';
 import store from './redux/store';
@@ -54,7 +56,7 @@ const ProtectedRoutes = () => {
   }
 
   return (
-    <Box sx={{ display: 'flex', justifyContent: 'center' }}> {/* Centrar contenido */}
+    <Box sx={{ display: 'flex', justifyContent: 'center' }}>
       <Navbar /> 
       <Box component="main" sx={{ flexGrow: 1, p: 3, width: '67%', maxWidth: '1200px' }}> {/* Ajustar tamaño del contenedor */}
         <Routes>
@@ -67,6 +69,7 @@ const ProtectedRoutes = () => {
           <Route path="/soporte" element={<SoporteScreen />} />
           <Route path="/stock" element={<StockScreen />} />
           <Route path="/costos" element={<CostosScreen />} />
+          <Route path="/despachos" element={<DespachosScreen />} />
           <Route path="/suppliers" element={<ProvedoresScreen />} />
           <Route path="/gastos" element={<GastosScreen />} />
         </Routes>
@@ -80,7 +83,9 @@ const App = () => {
     <Provider store={store}>
       <Router>
         <ThemeProvider theme={theme}>
+          <CssBaseline />
           <ProtectedRoutes />
+          <Whatsapp /> 
         </ThemeProvider>
       </Router>
     </Provider>
@@ -88,4 +93,5 @@ const App = () => {
 };
 
 export default App;
+
 

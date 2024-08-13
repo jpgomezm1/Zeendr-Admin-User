@@ -38,7 +38,7 @@ const getRowClassName = (estado) => {
   }
 };
 
-const OrderTable = ({ orders, onOpenComprobanteDialog, onEstadoChange, onOpenProductosDialog, onEditOrder, onDeleteOrder }) => {
+const OrderTable = ({ orders, onOpenComprobanteDialog, onEstadoChange, onOpenProductosDialog, onEditOrder, onDeleteOrder, onOpenDireccionDialog }) => { // Añadido onOpenDireccionDialog
   return (
     <Box sx={{ height: 'auto', width: '100%', padding: 2 }}>
       <Paper sx={{ width: '100%', mb: 2 }}>
@@ -64,7 +64,12 @@ const OrderTable = ({ orders, onOpenComprobanteDialog, onEstadoChange, onOpenPro
               {orders.map((row) => (
                 <TableRow key={row.id} className={getRowClassName(row.estado)}>
                   <TableCell>{row.nombre_completo}</TableCell>
-                  <TableCell>{row.direccion}</TableCell>
+                  <TableCell 
+                    onClick={() => onOpenDireccionDialog(row.direccion, row.detalles_direccion)} // Añadido onClick
+                    sx={{ cursor: 'pointer', textDecoration: 'underline', color: 'blue' }} // Estilo para indicar que es interactivo
+                  >
+                    {row.direccion}
+                  </TableCell>
                   <TableCell>{row.fecha}</TableCell>
                   <TableCell>{row.fecha_entrega || 'No programada'}</TableCell>
                   <TableCell>{row.rango_horas || 'No programado'}</TableCell>

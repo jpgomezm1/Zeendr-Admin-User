@@ -3,8 +3,6 @@ import { Box, Typography, Card, CardContent, useTheme } from '@mui/material';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import PaymentIcon from '@mui/icons-material/Payment';
 import PendingActionsIcon from '@mui/icons-material/PendingActions';
-import DoneIcon from '@mui/icons-material/Done';
-import HourglassEmptyIcon from '@mui/icons-material/HourglassEmpty';
 import ListAltIcon from '@mui/icons-material/ListAlt'; // Nuevo icono para Total de Pedidos
 
 const formatCurrency = (value) => {
@@ -64,7 +62,6 @@ const SummaryCards = (summary) => {
       sx={{
         display: 'grid',
         gridTemplateColumns: 'repeat(auto-fit, minmax(275px, 1fr))',
-        gap: 4,
         marginBottom: 3,
       }}
     >

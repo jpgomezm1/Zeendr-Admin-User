@@ -30,6 +30,9 @@ const DeliveryScreen = () => {
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const [deletingOrderId, setDeletingOrderId] = useState(null);
   const token = useSelector((state) => state.auth.token);
+  const [openDireccionDialog, setOpenDireccionDialog] = useState(false); // Nuevo estado para manejar el diálogo de dirección
+  const [selectedDireccion, setSelectedDireccion] = useState(''); // Estado para la dirección seleccionada
+  const [selectedDetallesDireccion, setSelectedDetallesDireccion] = useState(''); // Estado para los detalles de la dirección seleccionada
 
   useEffect(() => {
     const fetchOrders = async () => {
@@ -59,6 +62,18 @@ const DeliveryScreen = () => {
     fetchOrders();
     fetchProducts();
   }, []);
+
+  const handleOpenDireccionDialog = (direccion, detallesDireccion) => {
+    setSelectedDireccion(direccion);
+    setSelectedDetallesDireccion(detallesDireccion);
+    setOpenDireccionDialog(true);
+  };
+
+  const handleCloseDireccionDialog = () => {
+    setOpenDireccionDialog(false);
+    setSelectedDireccion('');
+    setSelectedDetallesDireccion('');
+  };
 
   const handleOpenComprobanteDialog = (comprobanteUrl) => {
     setSelectedComprobante(comprobanteUrl);
@@ -147,6 +162,7 @@ const DeliveryScreen = () => {
         nombre_completo: order.nombre_completo,
         numero_telefono: order.numero_telefono,
         direccion: order.direccion,
+        detalles_direccion: order.detalles_direccion, // Incluir detalles de la dirección
         fecha: order.fecha_hora,
         fecha_entrega: order.fecha_entrega,
         rango_horas: order.rango_horas,
@@ -248,6 +264,7 @@ const DeliveryScreen = () => {
           onOpenProductosDialog={handleOpenProductosDialog}
           onEditOrder={handleEditOrder}
           onDeleteOrder={openDeleteConfirmation}
+          onOpenDireccionDialog={handleOpenDireccionDialog} // Añadido para manejar el diálogo de dirección
         />
       )}
       <Modals
@@ -308,6 +325,77 @@ const DeliveryScreen = () => {
            </Button>
          </DialogActions>
        </Dialog>
+      {/* Diálogo para mostrar detalles de la dirección */}
+      <Dialog
+  open={openDireccionDialog}
+  onClose={handleCloseDireccionDialog}
+  aria-labelledby="direccion-dialog-title"
+  aria-describedby="direccion-dialog-description"
+  PaperProps={{
+    sx: {
+      borderRadius: '16px',
+      padding: 2,
+      maxWidth: 500,
+      backgroundColor: theme.palette.background.default,
+    },
+  }}
+>
+  <DialogTitle
+    id="direccion-dialog-title"
+    sx={{
+      fontSize: '1.5rem',
+      fontWeight: 'bold',
+      color: '#801BF5',
+      textAlign: 'center',
+    }}
+  >
+    Detalles de la Dirección
+  </DialogTitle>
+  <DialogContent sx={{ marginTop: 2 }}>
+    <Box
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'flex-start',
+        gap: 2,
+        backgroundColor: theme.palette.background.paper,
+        borderRadius: 2,
+        padding: 2,
+        boxShadow: 1,
+      }}
+    >
+      <Typography variant="h6" sx={{ fontWeight: 'bold', color: theme.palette.text.primary }}>
+        Dirección:
+      </Typography>
+      <Typography variant="body1" sx={{ color: 'black' }}>
+        {selectedDireccion}
+      </Typography>
+      <Typography variant="h6" sx={{ fontWeight: 'bold', color: theme.palette.text.primary }}>
+        Detalles:
+      </Typography>
+      <Typography variant="body1" sx={{  color: 'black' }}>
+        {selectedDetallesDireccion || 'No hay detalles adicionales'}
+      </Typography>
+    </Box>
+  </DialogContent>
+  <DialogActions sx={{ justifyContent: 'center', marginTop: 2 }}>
+    <Button
+      onClick={handleCloseDireccionDialog}
+      sx={{
+        backgroundColor: '#801BF5',
+        color: theme.palette.getContrastText(theme.palette.primary.main),
+        '&:hover': {
+          backgroundColor: theme.palette.primary.dark,
+        },
+        borderRadius: '8px',
+        paddingX: 3,
+        paddingY: 1,
+      }}
+    >
+      Cerrar
+    </Button>
+  </DialogActions>
+</Dialog>
     </Box>
   );
 };

@@ -59,6 +59,7 @@ const Navbar = () => {
 
   const navItems = [
     { to: '/orders', icon: OrdenesIcon, text: 'Órdenes' },
+    { to: '/despachos', icon: ProductosIcon, text: 'Envios' },
     { to: '/products', icon: ProductosIcon, text: 'Productos' },
     { to: '/stock', icon: EntregasIcon, text: 'Inventarios' },
     { to: '/clients', icon: ClientIcon, text: 'Clientes' },
@@ -67,7 +68,6 @@ const Navbar = () => {
     { to: '/gastos', icon: GastosIcon, text: 'Gastos' },
     { to: '/data', icon: DataIcon, text: 'Data' },
     { to: '/params', icon: ConfigIcon, text: 'Parámetros' },
-    { to: '/soporte', icon: SoporteIcon, text: 'Soporte' }
   ];
 
   return (

@@ -3,7 +3,8 @@ import { Box, Tabs, Tab, Typography, AppBar, useTheme } from '@mui/material';
 import CategoriaTable from './CategoriaTable';
 import MensajeWhatsApp from './MensajeWhatsApp';
 import HorarioAtencion from './HorarioAtencion';
-import CuponesDescuento from './CuponesDescuento'; // Importamos el nuevo componente CuponesDescuento
+import CuponesDescuento from './CuponesDescuento';
+import DomicilioPrice from './DomicilioPrice';
 import TabPanel from '../GastosScreen/TabPanel';
 
 import ConfigIcon from '../../assets/icons/config.png';
@@ -21,7 +22,7 @@ const ParametrosScreen = () => {
       <Box sx={{ display: 'flex', alignItems: 'center', marginBottom: 4 }}>
         <img src={ConfigIcon} alt="Gestión de Pedidos" style={{ width: 70, height: 70, marginRight: theme.spacing(2) }} />
         <Typography variant="h3" style={{ fontFamily: 'Providence Sans Pro', fontWeight: 'bold' }}>
-           Tablero de Comandos
+          Tablero de Comandos
         </Typography>
       </Box>
       <AppBar position="static" sx={{ backgroundColor: 'transparent', boxShadow: 'none', borderBottom: '2px solid #5E55FE' }}>
@@ -53,7 +54,8 @@ const ParametrosScreen = () => {
             <Tab label="Categorías del Menú" id="tab-0" aria-controls="tabpanel-0" />
             <Tab label="Mensajes de WhatsApp" id="tab-1" aria-controls="tabpanel-1" />
             <Tab label="Horarios de Atención" id="tab-2" aria-controls="tabpanel-2" />
-            <Tab label="Cupones de Descuento" id="tab-3" aria-controls="tabpanel-3" />  {/* Nuevo tab */}
+            <Tab label="Cupones de Descuento" id="tab-3" aria-controls="tabpanel-3" />
+            <Tab label="Domicilios" id="tab-4" aria-controls="tabpanel-4" />  {/* Nuevo tab */}
           </Tabs>
         </Box>
       </AppBar>
@@ -67,7 +69,10 @@ const ParametrosScreen = () => {
         <HorarioAtencion />
       </TabPanel>
       <TabPanel value={tabValue} index={3}>
-        <CuponesDescuento />  {/* Nuevo TabPanel */}
+        <CuponesDescuento />
+      </TabPanel>
+      <TabPanel value={tabValue} index={4}>
+        <DomicilioPrice /> 
       </TabPanel>
     </Box>
   );
