@@ -61,13 +61,15 @@ const MensajeWhatsApp = () => {
       const promises = Object.keys(mensajes).map(async (estado) => {
         const mensajeId = mensajeIds[estado];
         const mensaje = mensajes[estado];
+        const data = { estado, mensaje };
+  
         if (mensajeId) {
-          return apiClient.put(`/mensajes/${mensajeId}`, { estado, mensaje });
+          return apiClient.put(`/mensajes/${mensajeId}`, data);
         } else {
-          return apiClient.post('/mensajes', { estado, mensaje });
+          return apiClient.post('/mensajes', data);
         }
       });
-
+  
       await Promise.all(promises);
       setLoading(false);
     } catch (error) {
@@ -174,3 +176,5 @@ const MensajeWhatsApp = () => {
 };
 
 export default MensajeWhatsApp;
+
+
