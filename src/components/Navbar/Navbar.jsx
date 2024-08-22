@@ -34,6 +34,7 @@ import ProveedoresIcon from '../../assets/icons/proveedores.png';
 import ClientIcon from '../../assets/icons/clientes.png';
 import ConfigIcon from '../../assets/icons/config.png';
 import EntregasIcon from '../../assets/icons/entregas.png';
+import EnviosIcon from '../../assets/icons/envios2.png';
 
 import { useSelector, useDispatch } from 'react-redux';
 import { logout } from '../../redux/authSlice';
@@ -59,7 +60,7 @@ const Navbar = () => {
 
   const navItems = [
     { to: '/orders', icon: OrdenesIcon, text: 'Órdenes' },
-    { to: '/despachos', icon: ProductosIcon, text: 'Envios' },
+    { to: '/despachos', icon: EnviosIcon, text: 'Envios' },
     { to: '/products', icon: ProductosIcon, text: 'Productos' },
     { to: '/stock', icon: EntregasIcon, text: 'Inventarios' },
     { to: '/clients', icon: ClientIcon, text: 'Clientes' },

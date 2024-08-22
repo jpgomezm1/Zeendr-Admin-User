@@ -31,7 +31,7 @@ const DataScreen = () => {
       try {
         const ordersResponse = await apiClient.get('/pedidos');
         const filteredOrders = ordersResponse.data.filter(order => 
-          order.estado === 'Pedido Confirmado' || order.estado === 'Pedido Recibido'
+          order.estado === 'Pedido Confirmado' || order.estado === 'Pedido Enviado'
         );
         setOrders(filteredOrders);
       } catch (error) {
@@ -241,4 +241,3 @@ const DataScreen = () => {
 };
 
 export default DataScreen;
-

@@ -4,6 +4,7 @@ import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import ProductoCard from '../../components/ProductCard/ProductCard';
 import ProductoDialog from '../../components/ProductDialog/ProductDialog';
 import ProductoTable from './ProductTable';
+import ConfirmationDialog from './ConfirmationDialog';
 import { apiClient } from '../../apiClient';
 
 import ProductosIcon from '../../assets/icons/productos.png';
@@ -16,7 +17,9 @@ function PaginaProductos() {
     const [editMode, setEditMode] = useState(false);
     const [productoId, setProductoId] = useState(null);
     const [loading, setLoading] = useState(false);
-    const [viewMode, setViewMode] = useState('cards'); // Estado para controlar el modo de vista
+    const [viewMode, setViewMode] = useState('cards');
+    const [confirmDialogOpen, setConfirmDialogOpen] = useState(false); // Estado para el diálogo de confirmación
+    const [confirmAction, setConfirmAction] = useState(() => {}); // Estado para la acción de confirmación
 
     useEffect(() => {
         fetchProductos();
@@ -44,7 +47,7 @@ function PaginaProductos() {
         if (nuevoProducto.imagen) {
             formData.append('imagen', nuevoProducto.file);
         }
-    
+
         try {
             const response = await apiClient({
                 method: editMode ? 'PUT' : 'POST',
@@ -78,6 +81,16 @@ function PaginaProductos() {
         setOpen(true);
     };
 
+    const confirmDelete = producto => {
+        setConfirmDialogOpen(true);
+        setConfirmAction(() => () => handleDelete(producto));
+    };
+
+    const confirmToggleVisibility = producto => {
+        setConfirmDialogOpen(true);
+        setConfirmAction(() => () => handleToggleVisibility(producto));
+    };
+
     const handleDelete = async producto => {
         setLoading(true);
         try {
@@ -87,6 +100,21 @@ function PaginaProductos() {
             console.error('Error al eliminar el producto', error);
         }
         setLoading(false);
+        setConfirmDialogOpen(false); // Cerrar el diálogo después de la acción
+    };
+
+    const handleToggleVisibility = async (producto) => {
+        setLoading(true);
+        try {
+            const response = await apiClient.put(`/productos/${producto.id}`, {
+                oculto: !producto.oculto,
+            });
+            setProductos(productos.map(p => (p.id === producto.id ? response.data : p)));
+        } catch (error) {
+            console.error('Error al cambiar la visibilidad del producto', error);
+        }
+        setLoading(false);
+        setConfirmDialogOpen(false); // Cerrar el diálogo después de la acción
     };
 
     const handleClickOpen = () => {
@@ -115,59 +143,77 @@ function PaginaProductos() {
     };
 
     return (
-           <Box sx={{ padding: 2, borderRadius: 2, maxWidth: '1200px', margin: '0 auto', width: '100%' }}>
+        <Box sx={{ padding: 2, borderRadius: 2, maxWidth: '1200px', margin: '0 auto', width: '100%' }}>
             <Box sx={{ display: 'flex', alignItems: 'center', marginBottom: 4 }}>
                <img src={ProductosIcon} alt="Gestión de Pedidos" style={{ width: 70, height: 70, marginRight: theme.spacing(2)}} />
                <Typography variant="h3" style={{ fontFamily: 'Providence Sans Pro', fontWeight: 'bold' }}>
                   Galeria de Caprichos
                </Typography>
-             </Box>
-                <Button 
-                    startIcon={<AddCircleOutlineIcon />} 
-                    onClick={handleClickOpen} 
-                    variant="contained" 
-                    size="large" 
-                    sx={{ mt: 2, backgroundColor: '#5E55FE', color: 'white', borderRadius: '10px', '&:hover': { backgroundColor: '#7b45a1' }, }}
-                >
-                    Agregar Producto
-                </Button>
-
-                <Typography component="div" sx={{ display: 'flex', alignItems: 'center', mt: 2 }}>
-                    <Switch
-                        checked={viewMode === 'table'}
-                        onChange={toggleViewMode}
-                        color="primary"
-                        inputProps={{ 'aria-label': 'Toggle view mode' }}
-                    />
-                    {viewMode === 'table' ? 'Vista de Tabla' : 'Vista de Tarjetas'}
-                </Typography>
-
-                {loading ? (
-                    <CircularProgress />
-                ) : (
-                    viewMode === 'cards' ? (
-                        <Grid container spacing={3} justifyContent="center" alignItems="center" sx={{ mt: 5 }}>
-                            {productos.map((producto, index) => (
-                                <ProductoCard key={index} producto={producto} onDelete={handleDelete} onEdit={handleEdit} />
-                            ))}
-                        </Grid>
-                    ) : (
-                        <ProductoTable productos={productos} onDelete={handleDelete} onEdit={handleEdit} />
-                    )
-                )}
-
-                <ProductoDialog
-                    open={open}
-                    handleClose={handleClose}
-                    handleChange={handleChange}
-                    handleAddProducto={handleAddProducto}
-                    nuevoProducto={nuevoProducto}
-                    loading={loading}
-                    editMode={editMode}
-                />
             </Box>
+            <Button 
+                startIcon={<AddCircleOutlineIcon />} 
+                onClick={handleClickOpen} 
+                variant="contained" 
+                size="large" 
+                sx={{ mt: 2, backgroundColor: '#5E55FE', color: 'white', borderRadius: '10px', '&:hover': { backgroundColor: '#7b45a1' }, }}
+            >
+                Agregar Producto
+            </Button>
+
+            <Typography component="div" sx={{ display: 'flex', alignItems: 'center', mt: 2 }}>
+                <Switch
+                    checked={viewMode === 'table'}
+                    onChange={toggleViewMode}
+                    color="primary"
+                    inputProps={{ 'aria-label': 'Toggle view mode' }}
+                />
+                {viewMode === 'table' ? 'Vista de Tabla' : 'Vista de Tarjetas'}
+            </Typography>
+
+            {loading ? (
+                <CircularProgress />
+            ) : (
+                viewMode === 'cards' ? (
+                    <Grid container spacing={3} justifyContent="center" alignItems="center" sx={{ mt: 5 }}>
+                        {productos.map((producto, index) => (
+                            <ProductoCard 
+                                key={index} 
+                                producto={producto} 
+                                onDelete={() => confirmDelete(producto)} 
+                                onEdit={handleEdit}
+                                onToggleVisibility={() => confirmToggleVisibility(producto)}
+                            />
+                        ))}
+                    </Grid>
+                ) : (
+                    <ProductoTable 
+                        productos={productos} 
+                        onDelete={confirmDelete} 
+                        onEdit={handleEdit} 
+                        onToggleVisibility={confirmToggleVisibility} 
+                    />
+                )
+            )}
+
+            <ProductoDialog
+                open={open}
+                handleClose={handleClose}
+                handleChange={handleChange}
+                handleAddProducto={handleAddProducto}
+                nuevoProducto={nuevoProducto}
+                loading={loading}
+                editMode={editMode}
+            />
+
+            <ConfirmationDialog
+                open={confirmDialogOpen}
+                handleClose={() => setConfirmDialogOpen(false)}
+                handleConfirm={confirmAction}
+                title="Confirmar acción"
+                content="¿Estás seguro de que quieres realizar esta acción?"
+            />
+        </Box>
     );
 }
 
 export default PaginaProductos;
-

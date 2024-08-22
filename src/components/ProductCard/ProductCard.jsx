@@ -2,11 +2,13 @@ import React from 'react';
 import { CardContent, Typography, Grid, IconButton } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import { red } from '@mui/material/colors';
 import { ProductCard, ProductMedia } from '../../styles/styledComponents';
 import LocalOfferIcon from '@mui/icons-material/LocalOffer';
 
-function ProductoCard({ producto, onDelete, onEdit }) {
+function ProductoCard({ producto, onDelete, onEdit, onToggleVisibility }) {
   const formatCurrency = (value) => {
     return new Intl.NumberFormat('es-CO', {
       style: 'currency',
@@ -30,10 +32,9 @@ function ProductoCard({ producto, onDelete, onEdit }) {
             color: 'white',
             padding: '5px',
             borderRadius: '5px',
-            zIndex: '2', // Asegura que el ícono de descuento tenga un z-index mayor
-            // Media query para ajustar la posición en pantallas pequeñas
+            zIndex: '2',
             '@media (max-width: 600px)': {
-              top: '40px', // Ajusta esto según la altura de tu Navbar
+              top: '40px',
             }
           }}>
             <LocalOfferIcon /> {producto.descuento}%
@@ -70,8 +71,11 @@ function ProductoCard({ producto, onDelete, onEdit }) {
             <IconButton onClick={() => onEdit(producto)} size="small" sx={{ color: '#5E55FE', marginRight: 1 }}>
               <EditIcon />
             </IconButton>
-            <IconButton onClick={() => onDelete(producto)} size="small" sx={{ color: red[500] }}>
+            <IconButton onClick={onDelete} size="small" sx={{ color: red[500] }}>
               <DeleteIcon />
+            </IconButton>
+            <IconButton onClick={onToggleVisibility} size="small" sx={{ color: '#5E55FE' }}>
+              {producto.oculto ? <VisibilityOffIcon /> : <VisibilityIcon />}
             </IconButton>
           </div>
         </CardContent>
@@ -81,4 +85,3 @@ function ProductoCard({ producto, onDelete, onEdit }) {
 }
 
 export default ProductoCard;
-

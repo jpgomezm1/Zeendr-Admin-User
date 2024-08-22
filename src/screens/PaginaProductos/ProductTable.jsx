@@ -1,9 +1,10 @@
-// components/ProductTable/ProductTable.jsx
 import React from 'react';
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, IconButton, Box } from '@mui/material';
 import { styled } from '@mui/system';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import VisibilityOffIcon from '@mui/icons-material/Visibility';
 import { red } from '@mui/material/colors';
 
 const formatCurrency = (value) => {
@@ -25,11 +26,11 @@ const StyledTableCell = styled(TableCell)(({ theme }) => ({
     }
   }));
 
-function ProductoTable({ productos, onDelete, onEdit }) {
+function ProductoTable({ productos, onDelete, onEdit, onToggleVisibility }) {
   return (
     <Box sx={{ height: 'auto', width: '100%', padding: 2 }}>
       <Paper sx={{ width: '100%', mb: 2 }}>
-      <TableContainer component={Paper} sx={{ marginTop: 3, borderRadius: 2, maxWidth: '100%', overflowX: 'auto' }}>
+        <TableContainer component={Paper} sx={{ marginTop: 3, borderRadius: 2, maxWidth: '100%', overflowX: 'auto' }}>
           <Table>
             <TableHead>
               <TableRow>
@@ -51,8 +52,11 @@ function ProductoTable({ productos, onDelete, onEdit }) {
                     <IconButton onClick={() => onEdit(producto)} size="small" sx={{ color: '#5E55FE', marginRight: 1 }}>
                       <EditIcon />
                     </IconButton>
-                    <IconButton onClick={() => onDelete(producto)} size="small" sx={{ color: red[500] }}>
+                    <IconButton onClick={onDelete} size="small" sx={{ color: red[500] }}>
                       <DeleteIcon />
+                    </IconButton>
+                    <IconButton onClick={onToggleVisibility} size="small" sx={{ color: '#5E55FE' }}>
+                      {producto.oculto ? <VisibilityOffIcon /> : <VisibilityIcon />}
                     </IconButton>
                   </TableCell>
                 </TableRow>
