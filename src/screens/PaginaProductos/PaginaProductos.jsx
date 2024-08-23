@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Button, Grid, CircularProgress, Switch, Typography, Box, useTheme } from '@mui/material';
+import { Button, Grid, CircularProgress, Typography, Box, useTheme, Switch } from '@mui/material';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import ProductoCard from '../../components/ProductCard/ProductCard';
 import ProductoDialog from '../../components/ProductDialog/ProductDialog';
 import ProductoTable from './ProductTable';
 import ConfirmationDialog from './ConfirmationDialog';
 import { apiClient } from '../../apiClient';
-
 import ProductosIcon from '../../assets/icons/productos.png';
 
 function PaginaProductos() {
@@ -86,11 +85,6 @@ function PaginaProductos() {
         setConfirmAction(() => () => handleDelete(producto));
     };
 
-    const confirmToggleVisibility = producto => {
-        setConfirmDialogOpen(true);
-        setConfirmAction(() => () => handleToggleVisibility(producto));
-    };
-
     const handleDelete = async producto => {
         setLoading(true);
         try {
@@ -98,20 +92,6 @@ function PaginaProductos() {
             setProductos(productos.filter(p => p.id !== producto.id));
         } catch (error) {
             console.error('Error al eliminar el producto', error);
-        }
-        setLoading(false);
-        setConfirmDialogOpen(false); // Cerrar el diálogo después de la acción
-    };
-
-    const handleToggleVisibility = async (producto) => {
-        setLoading(true);
-        try {
-            const response = await apiClient.put(`/productos/${producto.id}`, {
-                oculto: !producto.oculto,
-            });
-            setProductos(productos.map(p => (p.id === producto.id ? response.data : p)));
-        } catch (error) {
-            console.error('Error al cambiar la visibilidad del producto', error);
         }
         setLoading(false);
         setConfirmDialogOpen(false); // Cerrar el diálogo después de la acción
@@ -181,7 +161,6 @@ function PaginaProductos() {
                                 producto={producto} 
                                 onDelete={() => confirmDelete(producto)} 
                                 onEdit={handleEdit}
-                                onToggleVisibility={() => confirmToggleVisibility(producto)}
                             />
                         ))}
                     </Grid>
@@ -190,7 +169,6 @@ function PaginaProductos() {
                         productos={productos} 
                         onDelete={confirmDelete} 
                         onEdit={handleEdit} 
-                        onToggleVisibility={confirmToggleVisibility} 
                     />
                 )
             )}
@@ -217,3 +195,5 @@ function PaginaProductos() {
 }
 
 export default PaginaProductos;
+
+

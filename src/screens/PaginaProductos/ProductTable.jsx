@@ -3,8 +3,6 @@ import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper
 import { styled } from '@mui/system';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
-import VisibilityIcon from '@mui/icons-material/Visibility';
-import VisibilityOffIcon from '@mui/icons-material/Visibility';
 import { red } from '@mui/material/colors';
 
 const formatCurrency = (value) => {
@@ -26,7 +24,7 @@ const StyledTableCell = styled(TableCell)(({ theme }) => ({
     }
   }));
 
-function ProductoTable({ productos, onDelete, onEdit, onToggleVisibility }) {
+function ProductoTable({ productos, onDelete, onEdit }) {  // Eliminamos onToggleVisibility
   return (
     <Box sx={{ height: 'auto', width: '100%', padding: 2 }}>
       <Paper sx={{ width: '100%', mb: 2 }}>
@@ -54,9 +52,6 @@ function ProductoTable({ productos, onDelete, onEdit, onToggleVisibility }) {
                     </IconButton>
                     <IconButton onClick={onDelete} size="small" sx={{ color: red[500] }}>
                       <DeleteIcon />
-                    </IconButton>
-                    <IconButton onClick={onToggleVisibility} size="small" sx={{ color: '#5E55FE' }}>
-                      {producto.oculto ? <VisibilityOffIcon /> : <VisibilityIcon />}
                     </IconButton>
                   </TableCell>
                 </TableRow>

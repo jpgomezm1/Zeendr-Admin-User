@@ -2,13 +2,11 @@ import React from 'react';
 import { CardContent, Typography, Grid, IconButton } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
-import VisibilityIcon from '@mui/icons-material/Visibility';
-import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import { red } from '@mui/material/colors';
 import { ProductCard, ProductMedia } from '../../styles/styledComponents';
 import LocalOfferIcon from '@mui/icons-material/LocalOffer';
 
-function ProductoCard({ producto, onDelete, onEdit, onToggleVisibility }) {
+function ProductoCard({ producto, onDelete, onEdit }) {  // Eliminamos onToggleVisibility
   const formatCurrency = (value) => {
     return new Intl.NumberFormat('es-CO', {
       style: 'currency',
@@ -73,9 +71,6 @@ function ProductoCard({ producto, onDelete, onEdit, onToggleVisibility }) {
             </IconButton>
             <IconButton onClick={onDelete} size="small" sx={{ color: red[500] }}>
               <DeleteIcon />
-            </IconButton>
-            <IconButton onClick={onToggleVisibility} size="small" sx={{ color: '#5E55FE' }}>
-              {producto.oculto ? <VisibilityOffIcon /> : <VisibilityIcon />}
             </IconButton>
           </div>
         </CardContent>
