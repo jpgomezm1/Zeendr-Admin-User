@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Box, TextField, Button, Paper, Typography, Accordion, AccordionSummary, AccordionDetails } from '@mui/material';
 import { styled } from '@mui/system';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import { useSelector } from 'react-redux';  // Importa useSelector para acceder al estado global
 import { apiClient } from '../../apiClient';  // Importa el apiClient configurado
 
 const primaryColor = '#4A90E2';
@@ -31,10 +32,16 @@ const MensajeWhatsApp = () => {
     "Pedido Entregado": null
   });
 
+  const token = useSelector((state) => state.auth.token); // Obtén el token del estado global
+  const establecimiento = useSelector((state) => state.auth.establecimiento); // Obtén el establecimiento del estado global
+
   useEffect(() => {
     const fetchMensajes = async () => {
       try {
-        const response = await apiClient.get('/mensajes');
+        const response = await apiClient.get('/mensajes', {
+          headers: { Authorization: `Bearer ${token}` },  // Incluye el token en los headers
+          params: { establecimiento },  // Incluye el establecimiento como parámetro si es necesario
+        });
         const fetchedMensajes = response.data.reduce((acc, mensaje) => {
           acc.mensajes[mensaje.estado] = mensaje.mensaje;
           acc.mensajeIds[mensaje.estado] = mensaje.id;
@@ -48,7 +55,7 @@ const MensajeWhatsApp = () => {
     };
 
     fetchMensajes();
-  }, []);
+  }, [token, establecimiento]);
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -61,15 +68,21 @@ const MensajeWhatsApp = () => {
       const promises = Object.keys(mensajes).map(async (estado) => {
         const mensajeId = mensajeIds[estado];
         const mensaje = mensajes[estado];
-        const data = { estado, mensaje };
-  
+        const data = { estado, mensaje, establecimiento };  // Asegúrate de incluir el establecimiento en los datos
+
+        console.log('Data being sent:', data); // Muestra los datos que se están enviando
+
         if (mensajeId) {
-          return apiClient.put(`/mensajes/${mensajeId}`, data);
+          return apiClient.put(`/mensajes/${mensajeId}`, data, {
+            headers: { Authorization: `Bearer ${token}` },  // Incluye el token en los headers
+          });
         } else {
-          return apiClient.post('/mensajes', data);
+          return apiClient.post('/mensajes', data, {
+            headers: { Authorization: `Bearer ${token}` },  // Incluye el token en los headers
+          });
         }
       });
-  
+
       await Promise.all(promises);
       setLoading(false);
     } catch (error) {

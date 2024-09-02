@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Box, Tabs, Tab, Typography, AppBar, useTheme } from '@mui/material';
 import CategoriaTable from './CategoriaTable';
-import MensajeWhatsApp from './MensajeWhatsApp';
 import HorarioAtencion from './HorarioAtencion';
 import CuponesDescuento from './CuponesDescuento';
 import DomicilioPrice from './DomicilioPrice';
@@ -52,10 +51,9 @@ const ParametrosScreen = () => {
             }}
           >
             <Tab label="Categorías del Menú" id="tab-0" aria-controls="tabpanel-0" />
-            <Tab label="Mensajes de WhatsApp" id="tab-1" aria-controls="tabpanel-1" />
-            <Tab label="Horarios de Atención" id="tab-2" aria-controls="tabpanel-2" />
-            <Tab label="Cupones de Descuento" id="tab-3" aria-controls="tabpanel-3" />
-            <Tab label="Domicilios" id="tab-4" aria-controls="tabpanel-4" />  {/* Nuevo tab */}
+            <Tab label="Horarios de Atención" id="tab-1" aria-controls="tabpanel-1" />
+            <Tab label="Cupones de Descuento" id="tab-2" aria-controls="tabpanel-2" />
+            <Tab label="Domicilios" id="tab-3" aria-controls="tabpanel-3" />  {/* Nuevo tab */}
           </Tabs>
         </Box>
       </AppBar>
@@ -63,15 +61,12 @@ const ParametrosScreen = () => {
         <CategoriaTable />
       </TabPanel>
       <TabPanel value={tabValue} index={1}>
-        <MensajeWhatsApp />
-      </TabPanel>
-      <TabPanel value={tabValue} index={2}>
         <HorarioAtencion />
       </TabPanel>
-      <TabPanel value={tabValue} index={3}>
+      <TabPanel value={tabValue} index={2}>
         <CuponesDescuento />
       </TabPanel>
-      <TabPanel value={tabValue} index={4}>
+      <TabPanel value={tabValue} index={3}>
         <DomicilioPrice /> 
       </TabPanel>
     </Box>
