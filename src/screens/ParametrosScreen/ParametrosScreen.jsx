@@ -4,6 +4,7 @@ import CategoriaTable from './CategoriaTable';
 import HorarioAtencion from './HorarioAtencion';
 import CuponesDescuento from './CuponesDescuento';
 import DomicilioPrice from './DomicilioPrice';
+import MetodosPago from './MetodosPago'; // Importar el nuevo componente
 import TabPanel from '../GastosScreen/TabPanel';
 
 import ConfigIcon from '../../assets/icons/config.png';
@@ -53,7 +54,8 @@ const ParametrosScreen = () => {
             <Tab label="Categorías del Menú" id="tab-0" aria-controls="tabpanel-0" />
             <Tab label="Horarios de Atención" id="tab-1" aria-controls="tabpanel-1" />
             <Tab label="Cupones de Descuento" id="tab-2" aria-controls="tabpanel-2" />
-            <Tab label="Domicilios" id="tab-3" aria-controls="tabpanel-3" />  {/* Nuevo tab */}
+            <Tab label="Domicilios" id="tab-3" aria-controls="tabpanel-3" />
+            <Tab label="Métodos de Pago" id="tab-4" aria-controls="tabpanel-4" /> {/* Nuevo tab */}
           </Tabs>
         </Box>
       </AppBar>
@@ -67,7 +69,10 @@ const ParametrosScreen = () => {
         <CuponesDescuento />
       </TabPanel>
       <TabPanel value={tabValue} index={3}>
-        <DomicilioPrice /> 
+        <DomicilioPrice />
+      </TabPanel>
+      <TabPanel value={tabValue} index={4}>
+        <MetodosPago /> {/* Agregar el componente de Métodos de Pago */}
       </TabPanel>
     </Box>
   );
