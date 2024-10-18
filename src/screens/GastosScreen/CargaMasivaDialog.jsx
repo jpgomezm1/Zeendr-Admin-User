@@ -1,12 +1,17 @@
 import React, { useState } from 'react';
 import * as XLSX from 'xlsx';
 import { Dialog, DialogTitle, DialogContent, DialogActions, Button, Input, Typography, Box, CircularProgress } from '@mui/material';
+import { useSelector } from 'react-redux';  // Para obtener el establecimiento
 import axios from 'axios';
 import UploadFileIcon from '@mui/icons-material/UploadFile';
+import DownloadIcon from '@mui/icons-material/Download';
 
 const CargaMasivaDialog = ({ open, handleClose }) => {
   const [file, setFile] = useState(null);
   const [loading, setLoading] = useState(false);
+  
+  // Obtener el establecimiento desde el estado de Redux
+  const establecimiento = useSelector((state) => state.auth.establecimiento);
 
   const handleFileChange = (event) => {
     setFile(event.target.files[0]);
@@ -40,6 +45,26 @@ const CargaMasivaDialog = ({ open, handleClose }) => {
     }
   };
 
+  // Función para descargar el template de Excel
+  const handleDownloadTemplate = () => {
+    const wb = XLSX.utils.book_new(); // Crear nuevo libro
+
+    // Verificamos si el establecimiento está disponible
+    const establecimientoTexto = establecimiento || 'Establecimiento Ejemplo';
+
+    const ws_data = [
+      ['tipo_gasto', 'descripcion', 'monto', 'fecha', 'establecimiento'], // Encabezados
+      // Ejemplo dinámico con el establecimiento
+      ['Operativo', 'Descripción de ejemplo', 100.50, '2024-10-18', establecimientoTexto]
+    ];
+
+    const ws = XLSX.utils.aoa_to_sheet(ws_data); // Convertir los datos a hoja
+    XLSX.utils.book_append_sheet(wb, ws, 'Gastos'); // Añadir la hoja al libro
+
+    // Generar el archivo Excel
+    XLSX.writeFile(wb, 'template_gastos.xlsx');
+  };
+
   return (
     <Dialog
       open={open}
@@ -48,9 +73,9 @@ const CargaMasivaDialog = ({ open, handleClose }) => {
       fullWidth
       PaperProps={{
         style: {
-          borderRadius: '20px', // Bordes redondeados
+          borderRadius: '20px',
           padding: '20px',
-          overflow: 'hidden', // Evitar que se desborde el contenido
+          overflow: 'hidden',
         },
       }}
     >
@@ -62,12 +87,20 @@ const CargaMasivaDialog = ({ open, handleClose }) => {
         sx={{
           textAlign: 'center',
           mt: 2,
-          overflow: 'hidden', // Evitar scroll innecesario
+          overflow: 'hidden',
         }}
       >
-        <Typography variant="body1" sx={{ mb: 3, color: '#7b7b7b' }}>
-          Selecciona un archivo Excel para cargar los gastos de manera masiva.
+        <Typography sx={{ mb: 3, color: '#7b7b7b', fontSize: '1.2rem' }}>
+          Selecciona un archivo Excel para cargar los gastos de manera masiva o descarga el template para empezar.
         </Typography>
+
+        <Typography sx={{ mb: 3, color: '#7b7b7b', fontSize: '1.2rem' }}>
+          Asegúrate de que el campo <strong>Establecimiento</strong> en todas las filas sea exactamente igual a: 
+          <strong> {establecimiento || 'Establecimiento Ejemplo'}</strong>.
+        </Typography>
+
+        {/* Botón para descargar el template */}
+       
 
         <Box
           sx={{
@@ -116,7 +149,7 @@ const CargaMasivaDialog = ({ open, handleClose }) => {
 
         <Button
           onClick={handleUpload}
-          disabled={loading} // Deshabilitar mientras se está subiendo el archivo
+          disabled={loading}
           sx={{
             color: '#FFF',
             backgroundColor: '#5E55FE',
@@ -129,6 +162,23 @@ const CargaMasivaDialog = ({ open, handleClose }) => {
           }}
         >
           {loading ? <CircularProgress size={24} sx={{ color: '#FFF' }} /> : 'Subir Archivo'}
+        </Button>
+
+        <Button
+          onClick={handleDownloadTemplate}
+          startIcon={<DownloadIcon />}
+          sx={{
+            color: '#FFF',
+            backgroundColor: '#28A745',
+            borderRadius: '10px',
+            padding: '10px 20px',
+            fontWeight: 'bold',
+            '&:hover': {
+              backgroundColor: '#218838',
+            },
+          }}
+        >
+          Descargar Template
         </Button>
       </DialogActions>
     </Dialog>
