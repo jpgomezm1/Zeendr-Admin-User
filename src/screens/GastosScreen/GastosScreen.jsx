@@ -1,17 +1,26 @@
 import React, { useState } from 'react';
-import { Box, Typography, Tabs, Tab, AppBar, useTheme } from '@mui/material';
+import { Box, Typography, Tabs, Tab, AppBar, Button, useTheme } from '@mui/material';
 import OtrosGastos from './OtrosGastos';
 import GastosProveedores from './GastosProveedores';
 import TabPanel from './TabPanel';
-
+import CargaMasivaDialog from './CargaMasivaDialog';  // Importar el componente del diálogo
 import GastosIcon from '../../assets/icons/gastos.png';
 
 const GastosScreen = () => {
   const theme = useTheme();
   const [currentTab, setCurrentTab] = useState(0);
+  const [openCargaMasiva, setOpenCargaMasiva] = useState(false);  // Estado para el diálogo
 
   const handleTabChange = (event, newValue) => {
     setCurrentTab(newValue);
+  };
+
+  const handleOpenCargaMasiva = () => {
+    setOpenCargaMasiva(true);
+  };
+
+  const handleCloseCargaMasiva = () => {
+    setOpenCargaMasiva(false);
   };
 
   return (
@@ -19,7 +28,7 @@ const GastosScreen = () => {
       <Box sx={{ display: 'flex', alignItems: 'center', marginBottom: 4 }}>
         <img src={GastosIcon} alt="Gestión de Pedidos" style={{ width: 70, height: 70, marginRight: theme.spacing(2) }} />
         <Typography variant="h3" style={{ fontFamily: 'Providence Sans Pro', fontWeight: 'bold' }}>
-           Observatorio de Desembolsos
+          Observatorio de Desembolsos
         </Typography>
       </Box>
       <AppBar position="static" sx={{ backgroundColor: 'transparent', boxShadow: 'none', borderBottom: '2px solid #5E55FE' }}>
@@ -49,16 +58,16 @@ const GastosScreen = () => {
           <Tab label="Gastos de Proveedores" />
         </Tabs>
       </AppBar>
-      <TabPanel value={currentTab} index={0}>
+      
+     <TabPanel value={currentTab} index={0}>
         <OtrosGastos />
       </TabPanel>
       <TabPanel value={currentTab} index={1}>
         <GastosProveedores />
       </TabPanel>
+
     </Box>
   );
 };
 
 export default GastosScreen;
-
-

@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
-import { Box, Typography, Button, Grid, IconButton, Paper, MenuItem, Select, FormControl, InputLabel, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Switch, FormControlLabel } from '@mui/material';
+import React, { useState, useEffect } from 'react'; 
+import { Box, Typography, Button, Grid, IconButton, Paper, MenuItem, Select, FormControl, InputLabel, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Switch, FormControlLabel, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import AddGastoDialog from './AddGastoDialog';
+import CargaMasivaDialog from './CargaMasivaDialog'; // Importa el diálogo de carga masiva
 import KPICard from './components/KPICard';
 import { styled } from '@mui/system';
 import { apiClient } from '../../apiClient';
@@ -25,12 +26,15 @@ const StyledTableCell = styled(TableCell)(({ theme }) => ({
 
 const OtrosGastos = () => {
   const [open, setOpen] = useState(false);
+  const [openCargaMasiva, setOpenCargaMasiva] = useState(false);  // Estado para el diálogo de carga masiva
   const [gastos, setGastos] = useState([]);
   const [editGasto, setEditGasto] = useState(null);
   const [mesSeleccionado, setMesSeleccionado] = useState('Todos');
   const [tipoGastoSeleccionado, setTipoGastoSeleccionado] = useState('Todos');
   const [tiposDeGasto, setTiposDeGasto] = useState([]);
   const [viewAsTable, setViewAsTable] = useState(false);
+  const [openConfirmDelete, setOpenConfirmDelete] = useState(false); // Estado para el diálogo de confirmación
+  const [gastoToDelete, setGastoToDelete] = useState(null); // Gasto que se desea eliminar
 
   useEffect(() => {
     fetchGastos();
@@ -71,12 +75,37 @@ const OtrosGastos = () => {
     setOpen(true);
   };
 
-  const handleDeleteGasto = async (id) => {
-    try {
-      await apiClient.delete(`/gastos/${id}`);
-      setGastos(gastos.filter(gasto => gasto.id !== id));
-    } catch (error) {
-      console.error('Error al eliminar el gasto:', error);
+  // Abrir el diálogo de carga masiva
+  const handleOpenCargaMasiva = () => {
+    setOpenCargaMasiva(true);
+  };
+
+  // Cerrar el diálogo de carga masiva
+  const handleCloseCargaMasiva = () => {
+    setOpenCargaMasiva(false);
+  };
+
+  // Abrir el diálogo de confirmación de eliminación
+  const handleOpenConfirmDelete = (gasto) => {
+    setGastoToDelete(gasto);
+    setOpenConfirmDelete(true);
+  };
+
+  // Cerrar el diálogo de confirmación
+  const handleCloseConfirmDelete = () => {
+    setOpenConfirmDelete(false);
+    setGastoToDelete(null);
+  };
+
+  const handleDeleteGasto = async () => {
+    if (gastoToDelete) {
+      try {
+        await apiClient.delete(`/gastos/${gastoToDelete.id}`);
+        setGastos(gastos.filter(gasto => gasto.id !== gastoToDelete.id));
+        handleCloseConfirmDelete(); // Cerrar el diálogo de confirmación tras eliminar
+      } catch (error) {
+        console.error('Error al eliminar el gasto:', error);
+      }
     }
   };
 
@@ -86,8 +115,13 @@ const OtrosGastos = () => {
     if (mes === 'Todos') {
       return gastos;
     }
+    
     const mesIndex = meses.indexOf(mes) - 1;
-    return gastos.filter(gasto => new Date(gasto.fecha).getMonth() === mesIndex);
+    
+    return gastos.filter(gasto => {
+      const gastoFecha = new Date(gasto.fecha);
+      return gastoFecha.getUTCMonth() === mesIndex;
+    });
   };
 
   const filtrarGastosPorTipo = (gastos, tipo) => {
@@ -101,29 +135,6 @@ const OtrosGastos = () => {
   const gastosFiltrados = filtrarGastosPorTipo(gastosFiltradosPorMes, tipoGastoSeleccionado);
 
   const totalGastadoFiltrado = gastosFiltrados.reduce((acc, gasto) => acc + gasto.monto, 0);
-
-  const renderGastosAsCards = () => (
-    <Grid container spacing={3} sx={{ mt: 4 }}>
-      {gastosFiltrados.map((gasto, index) => (
-        <Grid item xs={12} sm={6} md={4} key={index}>
-          <Paper elevation={3} sx={{ p: 2, borderRadius: '10px' }}>
-            <Typography variant="h6" sx={{ color: '#5E55FE', fontWeight: 'bold', mb: 1 }}>{gasto.tipo_gasto}</Typography>
-            <Typography variant="body2" color="textSecondary">{gasto.descripcion}</Typography>
-            <Typography variant="body1" sx={{ fontWeight: 'bold', mt: 1 }}>Monto: {formatCurrency(gasto.monto)}</Typography>
-            <Typography variant="body2" color="textSecondary">Fecha: {gasto.fecha}</Typography>
-            <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
-              <IconButton onClick={() => handleEditGasto(gasto)} sx={{ color: '#5E55FE' }}>
-                <EditIcon />
-              </IconButton>
-              <IconButton onClick={() => handleDeleteGasto(gasto.id)} sx={{ color: '#5E55FE' }}>
-                <DeleteIcon />
-              </IconButton>
-            </Box>
-          </Paper>
-        </Grid>
-      ))}
-    </Grid>
-  );
 
   const renderGastosAsTable = () => (
     <TableContainer component={Paper} sx={{ mt: 4 }}>
@@ -148,7 +159,7 @@ const OtrosGastos = () => {
                 <IconButton onClick={() => handleEditGasto(gasto)} sx={{ color: '#5E55FE' }}>
                   <EditIcon />
                 </IconButton>
-                <IconButton onClick={() => handleDeleteGasto(gasto.id)} sx={{ color: '#5E55FE' }}>
+                <IconButton onClick={() => handleOpenConfirmDelete(gasto)} sx={{ color: '#5E55FE' }}>
                   <DeleteIcon />
                 </IconButton>
               </TableCell>
@@ -157,6 +168,29 @@ const OtrosGastos = () => {
         </TableBody>
       </Table>
     </TableContainer>
+  );
+
+  const renderGastosAsCards = () => (
+    <Grid container spacing={3} sx={{ mt: 4 }}>
+      {gastosFiltrados.map((gasto, index) => (
+        <Grid item xs={12} sm={6} md={4} key={index}>
+          <Paper elevation={3} sx={{ p: 2, borderRadius: '10px' }}>
+            <Typography variant="h6" sx={{ color: '#5E55FE', fontWeight: 'bold', mb: 1 }}>{gasto.tipo_gasto}</Typography>
+            <Typography variant="body2" color="textSecondary">{gasto.descripcion}</Typography>
+            <Typography variant="body1" sx={{ fontWeight: 'bold', mt: 1 }}>Monto: {formatCurrency(gasto.monto)}</Typography>
+            <Typography variant="body2" color="textSecondary">Fecha: {gasto.fecha}</Typography>
+            <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
+              <IconButton onClick={() => handleEditGasto(gasto)} sx={{ color: '#5E55FE' }}>
+                <EditIcon />
+              </IconButton>
+              <IconButton onClick={() => handleOpenConfirmDelete(gasto)} sx={{ color: '#5E55FE' }}>
+                <DeleteIcon />
+              </IconButton>
+            </Box>
+          </Paper>
+        </Grid>
+      ))}
+    </Grid>
   );
 
   return (
@@ -173,6 +207,18 @@ const OtrosGastos = () => {
             Agregar Gasto
           </Button>
         </Grid>
+
+        {/* Botón de Carga Masiva */}
+        <Grid item>
+          <Button
+            onClick={handleOpenCargaMasiva}
+            sx={{ mt: 2, backgroundColor: '#5E55FE', color: 'white', borderRadius: '10px', '&:hover': { backgroundColor: '#7b45a1' } }}
+            variant="contained"
+          >
+            Carga Masiva de Gastos
+          </Button>
+        </Grid>
+
         <Grid item>
           <FormControl sx={{ mt: 2, minWidth: 120 }}>
             <InputLabel id="mes-select-label">Mes</InputLabel>
@@ -217,7 +263,12 @@ const OtrosGastos = () => {
           />
         </Grid>
       </Grid>
+
       {viewAsTable ? renderGastosAsTable() : renderGastosAsCards()}
+
+      {/* Diálogo de carga masiva */}
+      <CargaMasivaDialog open={openCargaMasiva} handleClose={handleCloseCargaMasiva} />
+
       <AddGastoDialog
         open={open}
         handleClose={handleClose}
