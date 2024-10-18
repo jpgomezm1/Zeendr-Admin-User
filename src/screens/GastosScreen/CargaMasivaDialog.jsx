@@ -6,7 +6,7 @@ import axios from 'axios';
 import UploadFileIcon from '@mui/icons-material/UploadFile';
 import DownloadIcon from '@mui/icons-material/Download';
 
-const CargaMasivaDialog = ({ open, handleClose }) => {
+const CargaMasivaDialog = ({ open, handleClose, onSuccessUpload }) => {
   const [file, setFile] = useState(null);
   const [loading, setLoading] = useState(false);
   
@@ -36,7 +36,11 @@ const CargaMasivaDialog = ({ open, handleClose }) => {
         }
       });
       alert('Archivo cargado exitosamente');
-      handleClose();
+      handleClose(); // Cerrar el modal
+      
+      // Llamar a la función para actualizar los datos en el componente padre
+      onSuccessUpload(); 
+
     } catch (error) {
       console.error('Error al subir el archivo', error);
       alert('Hubo un error al subir el archivo');
@@ -163,7 +167,6 @@ const CargaMasivaDialog = ({ open, handleClose }) => {
         >
           {loading ? <CircularProgress size={24} sx={{ color: '#FFF' }} /> : 'Subir Archivo'}
         </Button>
-
         <Button
           onClick={handleDownloadTemplate}
           startIcon={<DownloadIcon />}

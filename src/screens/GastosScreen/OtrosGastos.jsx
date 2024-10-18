@@ -85,6 +85,10 @@ const OtrosGastos = () => {
     setOpenCargaMasiva(false);
   };
 
+  const handleSuccessUpload = () => {
+    fetchGastos();  // Volvemos a llamar la función para recargar los gastos
+  };
+
   // Abrir el diálogo de confirmación de eliminación
   const handleOpenConfirmDelete = (gasto) => {
     setGastoToDelete(gasto);
@@ -267,7 +271,7 @@ const OtrosGastos = () => {
       {viewAsTable ? renderGastosAsTable() : renderGastosAsCards()}
 
       {/* Diálogo de carga masiva */}
-      <CargaMasivaDialog open={openCargaMasiva} handleClose={handleCloseCargaMasiva} />
+      <CargaMasivaDialog open={openCargaMasiva} handleClose={handleCloseCargaMasiva} onSuccessUpload={handleSuccessUpload}/>
 
       <AddGastoDialog
         open={open}
