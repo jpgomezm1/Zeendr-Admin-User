@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react'; 
 import Plot from 'react-plotly.js';
 import { CircularProgress, Box, Typography, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
 import { apiClient } from '../../../apiClient';
@@ -49,13 +49,16 @@ const GastosChart = () => {
     };
 
     filtrarPorTipo(gastos).forEach((gasto) => {
-      const month = new Date(gasto.fecha).getMonth();
-      monthlyData[month] += gasto.monto;
+      // Utilizar el formato de fecha recibido desde el backend %Y-%m-%d
+      const gastoDate = new Date(gasto.fecha); // Ya está en formato "YYYY-MM-DD"
+      const monthIndex = gastoDate.getUTCMonth(); // Usar getUTCMonth para evitar problemas de zona horaria
+      monthlyData[monthIndex] += gasto.monto;
     });
 
     filtrarPorTipo(pedidos).forEach((pedido) => {
-      const month = new Date(pedido.fecha_hora).getMonth();
-      monthlyData[month] += pedido.total_costo;
+      const pedidoDate = new Date(pedido.fecha_hora); // Ya está en formato "YYYY-MM-DD"
+      const monthIndex = pedidoDate.getUTCMonth();
+      monthlyData[monthIndex] += pedido.total_costo;
     });
 
     return monthlyData.map(value => formatCurrency(value));
@@ -158,5 +161,3 @@ const GastosChart = () => {
 };
 
 export default GastosChart;
-
-

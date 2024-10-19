@@ -39,7 +39,11 @@ const GastosPorTipoChart = () => {
         setGastosData(responseGastos.data);
         setPedidosData(pedidosConTipo);
 
-        const uniqueMonths = [...new Set([...responseGastos.data.map(gasto => new Date(gasto.fecha).getMonth()), ...pedidosConTipo.map(pedido => new Date(pedido.fecha_hora).getMonth())])];
+        // Corregimos cómo se manejan las fechas al obtener el mes
+        const uniqueMonths = [...new Set([
+          ...responseGastos.data.map(gasto => new Date(gasto.fecha).getUTCMonth()),
+          ...pedidosConTipo.map(pedido => new Date(pedido.fecha_hora).getUTCMonth())
+        ])];
         setMesSeleccionado(uniqueMonths[0]);
 
         const uniqueTipos = [...new Set([...responseGastos.data.map(gasto => gasto.tipo_gasto), ...pedidosConTipo.map(pedido => pedido.tipo_gasto)])];
@@ -66,7 +70,7 @@ const GastosPorTipoChart = () => {
     const data = {};
 
     const addData = (item, dateField, amountField, typeField) => {
-      const month = new Date(item[dateField]).getMonth();
+      const month = new Date(item[dateField]).getUTCMonth(); // Corregimos con getUTCMonth
       if (month === mesSeleccionado) {
         const type = item[typeField];
         if (!data[type]) data[type] = 0;
@@ -142,7 +146,7 @@ const GastosPorTipoChart = () => {
     },
   };
 
-  const uniqueMonths = [...new Set([...gastosData.map(gasto => new Date(gasto.fecha).getMonth()), ...pedidosData.map(pedido => new Date(pedido.fecha_hora).getMonth())])];
+  const uniqueMonths = [...new Set([...gastosData.map(gasto => new Date(gasto.fecha).getUTCMonth()), ...pedidosData.map(pedido => new Date(pedido.fecha_hora).getUTCMonth())])];
 
   return (
     <Box sx={{ p: 4 }}>
@@ -158,7 +162,9 @@ const GastosPorTipoChart = () => {
           label="Mes"
         >
           {uniqueMonths.map((month, index) => (
-            <MenuItem key={index} value={month}>{new Date(0, month).toLocaleString('es-CO', { month: 'long' }).charAt(0).toUpperCase() + new Date(0, month).toLocaleString('es-CO', { month: 'long' }).slice(1)}</MenuItem>
+            <MenuItem key={index} value={month}>
+              {new Date(0, month).toLocaleString('es-CO', { month: 'long' }).charAt(0).toUpperCase() + new Date(0, month).toLocaleString('es-CO', { month: 'long' }).slice(1)}
+            </MenuItem>
           ))}
         </Select>
       </FormControl>

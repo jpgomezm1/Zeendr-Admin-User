@@ -79,12 +79,12 @@ const DataScreen = () => {
     const gastosPorMes = Array(12).fill(0);
 
     orders.forEach(order => {
-      const month = new Date(order.fecha_hora).getMonth();
+      const month = new Date(order.fecha_hora).getUTCMonth();  // Cambio aquí
       ventasPorMes[month] += order.total_productos + (deliveryCosts[order.barrio] || 0);
     });
 
     gastos.forEach(gasto => {
-      const month = new Date(gasto.fecha).getMonth();
+      const month = new Date(gasto.fecha).getUTCMonth();  // Cambio aquí
       gastosPorMes[month] += gasto.monto;
     });
 
@@ -100,13 +100,13 @@ const DataScreen = () => {
     const costosInsumosPorMes = Array(12).fill(0);
 
     orders.forEach(order => {
-      const month = new Date(order.fecha_hora).getMonth();
+      const month = new Date(order.fecha_hora).getUTCMonth();  // Cambio aquí
       ventasPorMes[month] += order.total_productos + (deliveryCosts[order.barrio] || 0);
     });
 
     gastos.forEach(gasto => {
       if (gasto.tipo_gasto === 'Proveedores' || gasto.tipo_gasto === 'Insumos') {
-        const month = new Date(gasto.fecha).getMonth();
+        const month = new Date(gasto.fecha).getUTCMonth();  // Cambio aquí
         costosInsumosPorMes[month] += gasto.monto;
       }
     });
@@ -122,12 +122,12 @@ const DataScreen = () => {
     const gastosPorMes = Array(12).fill(0);
 
     orders.forEach(order => {
-      const month = new Date(order.fecha_hora).getMonth();
+      const month = new Date(order.fecha_hora).getUTCMonth();  // Cambio aquí
       ventasPorMes[month] += order.total_productos + (deliveryCosts[order.barrio] || 0);
     });
 
     gastos.forEach(gasto => {
-      const month = new Date(gasto.fecha).getMonth();
+      const month = new Date(gasto.fecha).getUTCMonth();  // Cambio aquí
       gastosPorMes[month] += gasto.monto;
     });
 
@@ -142,12 +142,12 @@ const DataScreen = () => {
     const gastosPorMes = Array(12).fill(0);
 
     orders.forEach(order => {
-      const month = new Date(order.fecha_hora).getMonth();
+      const month = new Date(order.fecha_hora).getUTCMonth();  // Cambio aquí
       ingresosPorMes[month] += order.total_productos + (deliveryCosts[order.barrio] || 0);
     });
 
     gastos.forEach(gasto => {
-      const month = new Date(gasto.fecha).getMonth();
+      const month = new Date(gasto.fecha).getUTCMonth();  // Cambio aquí
       gastosPorMes[month] += gasto.monto;
     });
 
