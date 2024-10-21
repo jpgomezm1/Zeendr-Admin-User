@@ -1,5 +1,22 @@
 import React, { useState, useEffect } from 'react';
-import { Typography, Box, CircularProgress, Select, MenuItem, FormControl, InputLabel, Stack, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, useTheme } from '@mui/material';
+import {
+  Typography,
+  Box,
+  CircularProgress,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  Stack,
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+  useTheme,
+  useMediaQuery,
+} from '@mui/material';
 import OrderTable from './OrderTable';
 import Modals from './Modals';
 import SummaryCards from './SummaryCards';
@@ -10,11 +27,13 @@ import dayjs from 'dayjs';
 import { useSelector } from 'react-redux';
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 import { apiClient } from '../../apiClient';
+import CargaMasivaPedidosDialog from './CargaMasivaPedidosDialog';
 
 import ordenesIcon from '../../assets/icons/ordenes.png';
 
 const DeliveryScreen = () => {
   const theme = useTheme();
+  const isSmallScreen = useMediaQuery(theme.breakpoints.down('sm')); // Detecta pantallas pequeñas
   const [orders, setOrders] = useState([]);
   const [productsMap, setProductsMap] = useState({});
   const [loading, setLoading] = useState(true);
@@ -33,6 +52,7 @@ const DeliveryScreen = () => {
   const [openDireccionDialog, setOpenDireccionDialog] = useState(false);
   const [selectedDireccion, setSelectedDireccion] = useState('');
   const [selectedDetallesDireccion, setSelectedDetallesDireccion] = useState('');
+  const [openCargaMasiva, setOpenCargaMasiva] = useState(false);
 
   useEffect(() => {
     const fetchOrders = async () => {
@@ -95,9 +115,9 @@ const DeliveryScreen = () => {
     setSelectedProductos([]);
   };
 
-  const handleEstadoChange = async (orderId, newEstado) => {
+  const handleEstadoChange = async (orderId, newEstado, notificarCliente = true) => {
     try {
-      await apiClient.put(`/pedido/${orderId}/estado`, { estado: newEstado });
+      await apiClient.put(`/pedido/${orderId}/estado`, { estado: newEstado, notificar_cliente: notificarCliente });
       setOrders((prevOrders) =>
         prevOrders.map((order) =>
           order.id === orderId ? { ...order, estado: newEstado } : order
@@ -106,6 +126,16 @@ const DeliveryScreen = () => {
     } catch (error) {
       console.error('Error updating order status:', error);
     }
+  };
+
+  // Función para abrir el diálogo
+  const handleOpenCargaMasiva = () => {
+    setOpenCargaMasiva(true);
+  };
+
+  // Función para cerrar el diálogo
+  const handleCloseCargaMasiva = () => {
+    setOpenCargaMasiva(false);
   };
 
   const handleEditOrder = async (orderId) => {
@@ -165,43 +195,43 @@ const DeliveryScreen = () => {
   });
 
   const transformOrders = filteredOrders
-  .sort((a, b) => {
-    if (a.estado === 'Pedido Enviado' && b.estado !== 'Pedido Enviado') {
-      return 1;
-    } else if (a.estado !== 'Pedido Enviado' && b.estado === 'Pedido Enviado') {
-      return -1;
-    } else {
-      return new Date(b.fecha_hora) - new Date(a.fecha_hora);
-    }
-  })
-  .map((order) => {
-    const productos = JSON.parse(order.productos);
-    const productosDescripcion = productos
-      .map((prod) => `${productsMap[prod.id]} (x${prod.quantity})`)
-      .join(', ');
+    .sort((a, b) => {
+      if (a.estado === 'Pedido Enviado' && b.estado !== 'Pedido Enviado') {
+        return 1;
+      } else if (a.estado !== 'Pedido Enviado' && b.estado === 'Pedido Enviado') {
+        return -1;
+      } else {
+        return new Date(b.fecha_hora) - new Date(a.fecha_hora);
+      }
+    })
+    .map((order) => {
+      const productos = JSON.parse(order.productos);
+      const productosDescripcion = productos
+        .map((prod) => `${productsMap[prod.id]} (x${prod.quantity})`)
+        .join(', ');
 
-    const totalVenta = order.total_productos + order.costo_domicilio;
+      const totalVenta = order.total_productos + order.costo_domicilio;
 
-    return {
-      id: order.id,
-      nombre_completo: order.nombre_completo,
-      numero_telefono: order.numero_telefono,
-      direccion: order.direccion,
-      detalles_direccion: order.detalles_direccion,
-      fecha: order.fecha_hora,
-      fecha_entrega: order.fecha_entrega,
-      rango_horas: order.rango_horas,
-      productos: productosDescripcion,
-      productosDetalles: productos,
-      metodo_pago: order.metodo_pago,
-      comprobante_pago: order.comprobante_pago,
-      estado: order.estado,
-      total: order.total_productos,
-      total_con_descuento: order.total_con_descuento,
-      total_domicilio: order.costo_domicilio,
-      total_venta: totalVenta
-    };
-  });
+      return {
+        id: order.id,
+        nombre_completo: order.nombre_completo,
+        numero_telefono: order.numero_telefono,
+        direccion: order.direccion,
+        detalles_direccion: order.detalles_direccion,
+        fecha: order.fecha_hora,
+        fecha_entrega: order.fecha_entrega,
+        rango_horas: order.rango_horas,
+        productos: productosDescripcion,
+        productosDetalles: productos,
+        metodo_pago: order.metodo_pago,
+        comprobante_pago: order.comprobante_pago,
+        estado: order.estado,
+        total: order.total_productos,
+        total_con_descuento: order.total_con_descuento,
+        total_domicilio: order.costo_domicilio,
+        total_venta: totalVenta
+      };
+    });
 
   const summaryOrders = transformOrders.filter(order => ['Pedido Confirmado', 'Pedido Enviado'].includes(order.estado));
 
@@ -224,10 +254,41 @@ const DeliveryScreen = () => {
   };
 
   return (
-    <Box sx={{ padding: 2, borderRadius: 2, maxWidth: '1400px', margin: '0 auto', width: '100%' }}>
-      <Box sx={{ display: 'flex', alignItems: 'center', marginBottom: 4 }}>
-        <img src={ordenesIcon} alt="Gestión de Pedidos" style={{ width: 70, height: 70, marginRight: theme.spacing(2) }} />
-        <Typography variant="h3" style={{ fontFamily: 'Providence Sans Pro', fontWeight: 'bold' }}>
+    <Box
+      sx={{
+        padding: isSmallScreen ? 1 : 2,
+        borderRadius: 2,
+        maxWidth: '1400px',
+        margin: '0 auto',
+        width: '100%',
+      }}
+    >
+      <Box
+        sx={{
+          display: 'flex',
+          flexDirection: isSmallScreen ? 'column' : 'row',
+          alignItems: isSmallScreen ? 'center' : 'flex-start',
+          marginBottom: 4,
+        }}
+      >
+        <img
+          src={ordenesIcon}
+          alt="Gestión de Pedidos"
+          style={{
+            width: isSmallScreen ? 50 : 70,
+            height: isSmallScreen ? 50 : 70,
+            marginRight: isSmallScreen ? 0 : theme.spacing(2),
+            marginBottom: isSmallScreen ? theme.spacing(2) : 0,
+          }}
+        />
+        <Typography
+          variant={isSmallScreen ? 'h5' : 'h3'}
+          style={{
+            fontFamily: 'Providence Sans Pro',
+            fontWeight: 'bold',
+            textAlign: isSmallScreen ? 'center' : 'left',
+          }}
+        >
           Aqui Aterrizan los Caprichos
         </Typography>
       </Box>
@@ -237,8 +298,13 @@ const DeliveryScreen = () => {
         totalDomicilios={totalDomicilios}
         numeroPedidos={numeroPedidos}
       />
-      <Stack direction="row" spacing={2} alignItems="center" sx={{ marginBottom: 2 }}>
-        <FormControl sx={{ minWidth: 200 }}>
+      <Stack
+        direction={isSmallScreen ? 'column' : 'row'}
+        spacing={2}
+        alignItems={isSmallScreen ? 'stretch' : 'center'}
+        sx={{ marginBottom: 2 }}
+      >
+        <FormControl sx={{ minWidth: isSmallScreen ? '100%' : 200 }}>
           <InputLabel>Filtrar por Mes</InputLabel>
           <Select
             value={selectedMonth}
@@ -251,7 +317,7 @@ const DeliveryScreen = () => {
             ))}
           </Select>
         </FormControl>
-        <FormControl sx={{ minWidth: 200 }} disabled={!selectedMonth}>
+        <FormControl sx={{ minWidth: isSmallScreen ? '100%' : 200 }} disabled={!selectedMonth}>
           <InputLabel>Filtrar por Fecha</InputLabel>
           <Select
             value={selectedDate}
@@ -274,11 +340,26 @@ const DeliveryScreen = () => {
             backgroundColor: '#5E56FB',
             color: 'white',
             borderRadius: '10px',
-            '&:hover': { backgroundColor: '#7b45a1' }
+            '&:hover': { backgroundColor: '#7b45a1' },
+            width: isSmallScreen ? '100%' : 'auto',
           }}
           startIcon={<LocalShippingIcon />}
         >
           Agregar Pedido
+        </Button>
+
+        <Button
+          variant="contained"
+          onClick={handleOpenCargaMasiva}
+          sx={{
+            backgroundColor: '#28A745',
+            color: 'white',
+            borderRadius: '10px',
+            '&:hover': { backgroundColor: '#218838' },
+            width: isSmallScreen ? '100%' : 'auto',
+          }}
+        >
+          Cargar Pedidos en Lote
         </Button>
       </Stack>
       {loading ? (
@@ -305,16 +386,16 @@ const DeliveryScreen = () => {
         selectedProductos={selectedProductos}
         productsMap={productsMap}
       />
-      <AddOrderDialog 
-        open={openAddOrderDialog} 
-        handleClose={handleCloseAddOrderDialog} 
+      <AddOrderDialog
+        open={openAddOrderDialog}
+        handleClose={handleCloseAddOrderDialog}
         productsMap={productsMap}
-        setOrders={setOrders} 
-        token={token} 
+        setOrders={setOrders}
+        token={token}
       />
-      <EditOrderDialog 
-        open={openEditOrderDialog} 
-        order={editingOrder} 
+      <EditOrderDialog
+        open={openEditOrderDialog}
+        order={editingOrder}
         handleClose={handleCloseEditOrderDialog}
         setOrders={setOrders}
       />
@@ -401,7 +482,7 @@ const DeliveryScreen = () => {
             <Typography variant="h6" sx={{ fontWeight: 'bold', color: theme.palette.text.primary }}>
               Detalles:
             </Typography>
-            <Typography variant="body1" sx={{  color: 'black' }}>
+            <Typography variant="body1" sx={{ color: 'black' }}>
               {selectedDetallesDireccion || 'No hay detalles adicionales'}
             </Typography>
           </Box>
@@ -424,10 +505,9 @@ const DeliveryScreen = () => {
           </Button>
         </DialogActions>
       </Dialog>
+      <CargaMasivaPedidosDialog open={openCargaMasiva} handleClose={handleCloseCargaMasiva} />
     </Box>
   );
 };
 
 export default DeliveryScreen;
-
-

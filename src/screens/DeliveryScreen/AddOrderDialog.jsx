@@ -1,13 +1,33 @@
 import React, { useState, useEffect } from 'react';
-import { Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField, FormControl, InputLabel, Select, MenuItem, IconButton, Box, Stack, Grid, Checkbox, FormControlLabel } from '@mui/material';
+import {
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button,
+  TextField,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  IconButton,
+  Box,
+  Stack,
+  Grid,
+  Checkbox,
+  FormControlLabel,
+  useMediaQuery,
+  useTheme,
+  Autocomplete,
+} from '@mui/material';
 import dayjs from 'dayjs';
 import AddCircleIcon from '@mui/icons-material/AddCircle';
 import RemoveCircleIcon from '@mui/icons-material/RemoveCircle';
 import SaveIcon from '@mui/icons-material/Save';
 import CancelIcon from '@mui/icons-material/Cancel';
-import { apiClient } from '../../apiClient';  // Importa el apiClient configurado
+import { apiClient } from '../../apiClient'; // Importa el apiClient configurado
 
-const AddOrderDialog = ({ open, handleClose, productsMap, setOrders, token }) => {
+const AddOrderDialog = ({ open, handleClose, productsMap, setOrders, token, onOrderAdded }) => {
   const [nombreCompleto, setNombreCompleto] = useState('');
   const [numeroTelefono, setNumeroTelefono] = useState('');
   const [correoElectronico, setCorreoElectronico] = useState('');
@@ -18,9 +38,12 @@ const AddOrderDialog = ({ open, handleClose, productsMap, setOrders, token }) =>
   const [costoDomicilio, setCostoDomicilio] = useState('');
   const [esPuntoVenta, setEsPuntoVenta] = useState(false);
 
+  const theme = useTheme();
+  const fullScreen = useMediaQuery(theme.breakpoints.down('sm'));
+
   useEffect(() => {
     if (open) {
-      // Reset fields when the dialog opens
+      // Resetear los campos cuando se abre el diálogo
       setNombreCompleto('');
       setNumeroTelefono('');
       setCorreoElectronico('');
@@ -50,32 +73,63 @@ const AddOrderDialog = ({ open, handleClose, productsMap, setOrders, token }) =>
   const handleSubmit = async () => {
     const newOrder = {
       nombre_completo: esPuntoVenta ? 'Punto de Venta' : nombreCompleto,
-      numero_telefono: esPuntoVenta ? '0000000000' : numeroTelefono,
-      correo_electronico: esPuntoVenta ? 'puntodeventa@zeendr.com' : correoElectronico,
-      direccion: esPuntoVenta ? 'Punto de Venta' : direccion,
+      numero_telefono: esPuntoVenta
+        ? '0000000000'
+        : numeroTelefono || 'No especificado',
+      correo_electronico: esPuntoVenta
+        ? 'puntodeventa@zeendr.com'
+        : correoElectronico || 'No especificado',
+      direccion: esPuntoVenta
+        ? 'Punto de Venta'
+        : direccion || 'No especificada',
       productos: JSON.stringify(productos),
       metodo_pago: metodoPago,
       fecha_hora: fechaHora,
-      costo_domicilio: esPuntoVenta ? 0 : parseFloat(costoDomicilio)
+      costo_domicilio: esPuntoVenta ? 0 : parseFloat(costoDomicilio || 0),
+      estado: 'Pedido Confirmado', // Añadido este campo
     };
 
     try {
       const response = await apiClient.post('/pedido_manual', newOrder);
-      setOrders(prevOrders => [...prevOrders, response.data]);
+      setOrders((prevOrders) => [...prevOrders, response.data]);
       handleClose();
+      if (onOrderAdded) {
+        onOrderAdded();
+      }
     } catch (error) {
       console.error('Error adding order:', error);
+      if (onOrderAdded) {
+        onOrderAdded(error);
+      }
     }
   };
 
+  // Convertir productsMap a un array de objetos para usar en Autocomplete
+  const productsArray = Object.entries(productsMap).map(([id, nombre]) => ({
+    id,
+    nombre,
+  }));
+
   return (
-    <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
-      <DialogTitle sx={{ textAlign: 'center', backgroundColor: '#f3f4f6', color: '#7B12F5', fontWeight: 'bold' }}>
+    <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth fullScreen={fullScreen}>
+      <DialogTitle
+        sx={{
+          textAlign: 'center',
+          backgroundColor: '#f3f4f6',
+          color: '#7B12F5',
+          fontWeight: 'bold',
+        }}
+      >
         Agregar Nueva Orden
       </DialogTitle>
       <DialogContent sx={{ padding: '24px' }}>
         <FormControlLabel
-          control={<Checkbox checked={esPuntoVenta} onChange={(e) => setEsPuntoVenta(e.target.checked)} />}
+          control={
+            <Checkbox
+              checked={esPuntoVenta}
+              onChange={(e) => setEsPuntoVenta(e.target.checked)}
+            />
+          }
           label="Orden en Punto de Venta"
         />
         <Grid container spacing={3}>
@@ -126,27 +180,38 @@ const AddOrderDialog = ({ open, handleClose, productsMap, setOrders, token }) =>
           {productos.map((producto, index) => (
             <Grid item xs={12} key={index}>
               <Box display="flex" alignItems="center">
-                <FormControl fullWidth margin="dense" sx={{ '& .MuiInputBase-root': { borderRadius: '10px' } }}>
-                  <InputLabel>Producto</InputLabel>
-                  <Select
-                    value={producto.id}
-                    onChange={(e) => handleProductoChange(index, 'id', e.target.value)}
-                    label="Producto"
-                  >
-                    {Object.entries(productsMap).map(([id, nombre]) => (
-                      <MenuItem key={id} value={id}>
-                        {nombre}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
+                <Autocomplete
+                  options={productsArray}
+                  getOptionLabel={(option) => option.nombre}
+                  onChange={(event, newValue) => {
+                    handleProductoChange(index, 'id', newValue ? newValue.id : '');
+                  }}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="Producto"
+                      margin="dense"
+                      fullWidth
+                      sx={{ '& .MuiInputBase-root': { borderRadius: '10px' } }}
+                    />
+                  )}
+                  value={
+                    productsArray.find((product) => product.id === producto.id) || null
+                  }
+                  sx={{ flexGrow: 1 }}
+                />
                 <TextField
                   margin="dense"
                   label="Cantidad"
                   type="number"
                   value={producto.quantity}
                   onChange={(e) => handleProductoChange(index, 'quantity', e.target.value)}
-                  sx={{ width: 100, marginLeft: 2, '& .MuiInputBase-root': { borderRadius: '10px' } }}
+                  sx={{
+                    width: 100,
+                    marginLeft: 2,
+                    '& .MuiInputBase-root': { borderRadius: '10px' },
+                  }}
+                  inputProps={{ min: 1 }}
                 />
                 <IconButton onClick={handleAddProduct} color="primary">
                   <AddCircleIcon />
@@ -160,14 +225,22 @@ const AddOrderDialog = ({ open, handleClose, productsMap, setOrders, token }) =>
             </Grid>
           ))}
           <Grid item xs={12}>
-            <TextField
-              margin="dense"
-              label="Método de Pago"
+            <FormControl
               fullWidth
-              value={metodoPago}
-              onChange={(e) => setMetodoPago(e.target.value)}
+              margin="dense"
               sx={{ '& .MuiInputBase-root': { borderRadius: '10px' } }}
-            />
+            >
+              <InputLabel>Método de Pago</InputLabel>
+              <Select
+                value={metodoPago}
+                onChange={(e) => setMetodoPago(e.target.value)}
+                label="Método de Pago"
+              >
+                <MenuItem value="Efectivo">Efectivo</MenuItem>
+                <MenuItem value="Transferencia">Transferencia</MenuItem>
+                <MenuItem value="Tarjeta">Tarjeta</MenuItem>
+              </Select>
+            </FormControl>
           </Grid>
           <Grid item xs={12}>
             <TextField
@@ -191,6 +264,7 @@ const AddOrderDialog = ({ open, handleClose, productsMap, setOrders, token }) =>
                 value={costoDomicilio}
                 onChange={(e) => setCostoDomicilio(e.target.value)}
                 sx={{ '& .MuiInputBase-root': { borderRadius: '10px' } }}
+                inputProps={{ min: 0 }}
               />
             </Grid>
           )}
@@ -198,15 +272,15 @@ const AddOrderDialog = ({ open, handleClose, productsMap, setOrders, token }) =>
       </DialogContent>
       <DialogActions sx={{ justifyContent: 'center', pb: 3 }}>
         <Stack direction="row" spacing={2}>
-          <Button 
-            onClick={handleClose} 
+          <Button
+            onClick={handleClose}
             sx={{ color: '#5E55FE', borderRadius: '10px' }}
             startIcon={<CancelIcon />}
           >
             Cancelar
           </Button>
-          <Button 
-            onClick={handleSubmit} 
+          <Button
+            onClick={handleSubmit}
             sx={{ color: '#5E55FE', borderRadius: '10px' }}
             startIcon={<SaveIcon />}
           >
@@ -219,5 +293,3 @@ const AddOrderDialog = ({ open, handleClose, productsMap, setOrders, token }) =>
 };
 
 export default AddOrderDialog;
-
-

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Typography, Card, CardContent, useTheme } from '@mui/material';
+import { Box, Typography, Card, CardContent, useTheme, useMediaQuery } from '@mui/material';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import PaymentIcon from '@mui/icons-material/Payment';
 import PendingActionsIcon from '@mui/icons-material/PendingActions';
@@ -38,14 +38,16 @@ const cardData = [
     valueKey: 'numeroPedidos',
     icon: ListAltIcon,
     isCurrency: false,
-  }
+  },
 ];
 
 const SummaryCards = (summary) => {
   const theme = useTheme();
+  const isSmallScreen = useMediaQuery(theme.breakpoints.down('sm'));
+
   const cardStyles = {
     width: '100%',
-    maxWidth: 225,
+    maxWidth: '100%',
     borderRadius: 2,
     boxShadow: 3,
     textAlign: 'center',
@@ -55,13 +57,15 @@ const SummaryCards = (summary) => {
     flexDirection: 'column',
     alignItems: 'center',
     background: 'linear-gradient(135deg, #7B11F5, #A46BF5)',
+    marginBottom: isSmallScreen ? theme.spacing(2) : 0,
   };
 
   return (
     <Box
       sx={{
         display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(275px, 1fr))',
+        gridTemplateColumns: isSmallScreen ? '1fr' : 'repeat(4, 1fr)',
+        gap: isSmallScreen ? theme.spacing(2) : theme.spacing(1),
         marginBottom: 3,
       }}
     >
@@ -71,11 +75,17 @@ const SummaryCards = (summary) => {
           <Card key={card.title} sx={cardStyles}>
             <CardContent>
               <IconComponent sx={{ fontSize: 40 }} />
-              <Typography variant="h6" component="div" sx={{ marginTop: 1, fontFamily: 'Poppins', fontWeight: 600 }}>
+              <Typography
+                variant="h6"
+                component="div"
+                sx={{ marginTop: 1, fontFamily: 'Poppins', fontWeight: 600 }}
+              >
                 {card.title}
               </Typography>
               <Typography variant="h5" sx={{ fontFamily: 'Poppins', fontWeight: 400 }}>
-                {card.isCurrency ? formatCurrency(summary[card.valueKey]) : summary[card.valueKey]}
+                {card.isCurrency
+                  ? formatCurrency(summary[card.valueKey])
+                  : summary[card.valueKey]}
               </Typography>
             </CardContent>
           </Card>
