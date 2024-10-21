@@ -19,12 +19,15 @@ import {
   useMediaQuery,
   useTheme,
   Autocomplete,
+  Collapse,
 } from '@mui/material';
 import dayjs from 'dayjs';
 import AddCircleIcon from '@mui/icons-material/AddCircle';
 import RemoveCircleIcon from '@mui/icons-material/RemoveCircle';
 import SaveIcon from '@mui/icons-material/Save';
 import CancelIcon from '@mui/icons-material/Cancel';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import { apiClient } from '../../apiClient'; // Importa el apiClient configurado
 
 const AddOrderDialog = ({ open, handleClose, productsMap, setOrders, token, onOrderAdded }) => {
@@ -32,11 +35,18 @@ const AddOrderDialog = ({ open, handleClose, productsMap, setOrders, token, onOr
   const [numeroTelefono, setNumeroTelefono] = useState('');
   const [correoElectronico, setCorreoElectronico] = useState('');
   const [direccion, setDireccion] = useState('');
-  const [productos, setProductos] = useState([{ id: '', quantity: 1 }]);
+  // Modificar productos para incluir precio personalizado y toggle visibility
+  const [productos, setProductos] = useState([
+    { id: '', quantity: 1, precio_personalizado: '', showPrecioPersonalizado: false },
+  ]);
   const [metodoPago, setMetodoPago] = useState('');
   const [fechaHora, setFechaHora] = useState(dayjs().format('YYYY-MM-DDTHH:mm'));
   const [costoDomicilio, setCostoDomicilio] = useState('');
   const [esPuntoVenta, setEsPuntoVenta] = useState(false);
+  const [clientes, setClientes] = useState([]); // Estado para clientes
+  // Nuevo estado para descuento porcentual y toggle
+  const [descuentoPorcentual, setDescuentoPorcentual] = useState('');
+  const [aplicarDescuento, setAplicarDescuento] = useState(false);
 
   const theme = useTheme();
   const fullScreen = useMediaQuery(theme.breakpoints.down('sm'));
@@ -48,26 +58,70 @@ const AddOrderDialog = ({ open, handleClose, productsMap, setOrders, token, onOr
       setNumeroTelefono('');
       setCorreoElectronico('');
       setDireccion('');
-      setProductos([{ id: '', quantity: 1 }]);
+      setProductos([
+        { id: '', quantity: 1, precio_personalizado: '', showPrecioPersonalizado: false },
+      ]);
       setMetodoPago('');
       setFechaHora(dayjs().format('YYYY-MM-DDTHH:mm'));
       setCostoDomicilio('');
       setEsPuntoVenta(false);
+      setDescuentoPorcentual('');
+      setAplicarDescuento(false);
+
+      // Obtener la lista de clientes
+      fetchClientes();
     }
   }, [open]);
 
+  const fetchClientes = async () => {
+    try {
+      const response = await apiClient.get('/clientes', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      setClientes(response.data);
+    } catch (error) {
+      console.error('Error fetching clientes:', error);
+    }
+  };
+
+  const handleClienteSelect = (newValue) => {
+    if (newValue) {
+      setNombreCompleto(newValue.nombre_completo || '');
+      setNumeroTelefono(newValue.numero_telefono || '');
+      setCorreoElectronico(newValue.correo_electronico || '');
+      setDireccion(newValue.direccion || '');
+    }
+  };
+
   const handleProductoChange = (index, key, value) => {
     const newProductos = [...productos];
-    newProductos[index][key] = key === 'quantity' ? parseInt(value, 10) : value;
+    if (key === 'quantity') {
+      newProductos[index][key] = parseInt(value, 10);
+    } else if (key === 'precio_personalizado') {
+      newProductos[index][key] = parseFloat(value);
+    } else {
+      newProductos[index][key] = value;
+    }
     setProductos(newProductos);
   };
 
   const handleAddProduct = () => {
-    setProductos([...productos, { id: '', quantity: 1 }]);
+    setProductos([
+      ...productos,
+      { id: '', quantity: 1, precio_personalizado: '', showPrecioPersonalizado: false },
+    ]);
   };
 
   const handleRemoveProduct = (index) => {
     setProductos(productos.filter((_, i) => i !== index));
+  };
+
+  const togglePrecioPersonalizado = (index) => {
+    const newProductos = [...productos];
+    newProductos[index].showPrecioPersonalizado = !newProductos[index].showPrecioPersonalizado;
+    setProductos(newProductos);
   };
 
   const handleSubmit = async () => {
@@ -87,6 +141,7 @@ const AddOrderDialog = ({ open, handleClose, productsMap, setOrders, token, onOr
       fecha_hora: fechaHora,
       costo_domicilio: esPuntoVenta ? 0 : parseFloat(costoDomicilio || 0),
       estado: 'Pedido Confirmado', // Añadido este campo
+      descuento_porcentual: aplicarDescuento ? parseFloat(descuentoPorcentual) || 0 : 0, // Nuevo campo
     };
 
     try {
@@ -111,7 +166,13 @@ const AddOrderDialog = ({ open, handleClose, productsMap, setOrders, token, onOr
   }));
 
   return (
-    <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth fullScreen={fullScreen}>
+    <Dialog
+      open={open}
+      onClose={handleClose}
+      maxWidth="sm"
+      fullWidth
+      fullScreen={fullScreen}
+    >
       <DialogTitle
         sx={{
           textAlign: 'center',
@@ -136,23 +197,57 @@ const AddOrderDialog = ({ open, handleClose, productsMap, setOrders, token, onOr
           {!esPuntoVenta && (
             <>
               <Grid item xs={12}>
-                <TextField
-                  margin="dense"
-                  label="Nombre Completo"
-                  fullWidth
-                  value={nombreCompleto}
-                  onChange={(e) => setNombreCompleto(e.target.value)}
-                  sx={{ '& .MuiInputBase-root': { borderRadius: '10px' } }}
+                <Autocomplete
+                  freeSolo
+                  options={clientes}
+                  getOptionLabel={(option) => option.nombre_completo || ''}
+                  onChange={(event, newValue) => {
+                    if (typeof newValue === 'string') {
+                      setNombreCompleto(newValue);
+                    } else {
+                      handleClienteSelect(newValue);
+                    }
+                  }}
+                  inputValue={nombreCompleto}
+                  onInputChange={(event, newInputValue) => {
+                    setNombreCompleto(newInputValue);
+                  }}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      margin="dense"
+                      label="Nombre Completo"
+                      fullWidth
+                      sx={{ '& .MuiInputBase-root': { borderRadius: '10px' } }}
+                    />
+                  )}
                 />
               </Grid>
               <Grid item xs={12}>
-                <TextField
-                  margin="dense"
-                  label="Número de Teléfono"
-                  fullWidth
-                  value={numeroTelefono}
-                  onChange={(e) => setNumeroTelefono(e.target.value)}
-                  sx={{ '& .MuiInputBase-root': { borderRadius: '10px' } }}
+                <Autocomplete
+                  freeSolo
+                  options={clientes}
+                  getOptionLabel={(option) => option.numero_telefono || ''}
+                  onChange={(event, newValue) => {
+                    if (typeof newValue === 'string') {
+                      setNumeroTelefono(newValue);
+                    } else {
+                      handleClienteSelect(newValue);
+                    }
+                  }}
+                  inputValue={numeroTelefono}
+                  onInputChange={(event, newInputValue) => {
+                    setNumeroTelefono(newInputValue);
+                  }}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      margin="dense"
+                      label="Número de Teléfono"
+                      fullWidth
+                      sx={{ '& .MuiInputBase-root': { borderRadius: '10px' } }}
+                    />
+                  )}
                 />
               </Grid>
               <Grid item xs={12}>
@@ -196,7 +291,8 @@ const AddOrderDialog = ({ open, handleClose, productsMap, setOrders, token, onOr
                     />
                   )}
                   value={
-                    productsArray.find((product) => product.id === producto.id) || null
+                    productsArray.find((product) => product.id === producto.id) ||
+                    null
                   }
                   sx={{ flexGrow: 1 }}
                 />
@@ -205,7 +301,9 @@ const AddOrderDialog = ({ open, handleClose, productsMap, setOrders, token, onOr
                   label="Cantidad"
                   type="number"
                   value={producto.quantity}
-                  onChange={(e) => handleProductoChange(index, 'quantity', e.target.value)}
+                  onChange={(e) =>
+                    handleProductoChange(index, 'quantity', e.target.value)
+                  }
                   sx={{
                     width: 100,
                     marginLeft: 2,
@@ -213,17 +311,59 @@ const AddOrderDialog = ({ open, handleClose, productsMap, setOrders, token, onOr
                   }}
                   inputProps={{ min: 1 }}
                 />
-                <IconButton onClick={handleAddProduct} color="primary">
-                  <AddCircleIcon />
+                <IconButton
+                  onClick={() => togglePrecioPersonalizado(index)}
+                  color="primary"
+                >
+                  {producto.showPrecioPersonalizado ? (
+                    <VisibilityOffIcon />
+                  ) : (
+                    <VisibilityIcon />
+                  )}
                 </IconButton>
                 {productos.length > 1 && (
-                  <IconButton onClick={() => handleRemoveProduct(index)} color="secondary">
+                  <IconButton
+                    onClick={() => handleRemoveProduct(index)}
+                    color="secondary"
+                  >
                     <RemoveCircleIcon />
                   </IconButton>
                 )}
               </Box>
+              {producto.showPrecioPersonalizado && (
+                <Box display="flex" alignItems="center" mt={1}>
+                  <TextField
+                    margin="dense"
+                    label="Precio Personalizado"
+                    type="number"
+                    value={producto.precio_personalizado}
+                    onChange={(e) =>
+                      handleProductoChange(
+                        index,
+                        'precio_personalizado',
+                        e.target.value
+                      )
+                    }
+                    sx={{
+                      width: 200,
+                      '& .MuiInputBase-root': { borderRadius: '10px' },
+                    }}
+                    inputProps={{ min: 0 }}
+                  />
+                </Box>
+              )}
             </Grid>
           ))}
+          <Grid item xs={12}>
+            <Button
+              onClick={handleAddProduct}
+              color="primary"
+              startIcon={<AddCircleIcon />}
+              sx={{ borderRadius: '10px' }}
+            >
+              Agregar Producto
+            </Button>
+          </Grid>
           <Grid item xs={12}>
             <FormControl
               fullWidth
@@ -254,6 +394,31 @@ const AddOrderDialog = ({ open, handleClose, productsMap, setOrders, token, onOr
               InputLabelProps={{ shrink: true }}
             />
           </Grid>
+          <Grid item xs={12}>
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={aplicarDescuento}
+                  onChange={(e) => setAplicarDescuento(e.target.checked)}
+                />
+              }
+              label="Aplicar Descuento"
+            />
+          </Grid>
+          {aplicarDescuento && (
+            <Grid item xs={12}>
+              <TextField
+                margin="dense"
+                label="Descuento (%)"
+                type="number"
+                fullWidth
+                value={descuentoPorcentual}
+                onChange={(e) => setDescuentoPorcentual(e.target.value)}
+                sx={{ '& .MuiInputBase-root': { borderRadius: '10px' } }}
+                inputProps={{ min: 0, max: 100 }}
+              />
+            </Grid>
+          )}
           {!esPuntoVenta && (
             <Grid item xs={12}>
               <TextField
