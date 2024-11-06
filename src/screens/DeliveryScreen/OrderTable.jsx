@@ -10,13 +10,13 @@ import {
   Box,
   IconButton,
   useMediaQuery,
-  Card,
-  CardContent,
   Typography,
   Button,
   useTheme,
   Grid,
   Chip,
+  Card,
+  Tooltip,
 } from '@mui/material';
 import { styled } from '@mui/system';
 import PaymentMethodCell from './PaymentMethodCell';
@@ -25,6 +25,9 @@ import ProductosCell from './ProductosCell';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
+import LocationOnIcon from '@mui/icons-material/LocationOn';
+import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
+import PaymentIcon from '@mui/icons-material/Payment';
 import './DeliveryScreen.css';
 
 const formatCurrency = (value) => {
@@ -57,6 +60,22 @@ const getRowClassName = (estado) => {
   }
 };
 
+// Función para obtener el estado abreviado en pantallas pequeñas
+const getShortStatus = (estado) => {
+  switch (estado) {
+    case 'Pedido Recibido':
+      return 'Recibido';
+    case 'Pedido Confirmado':
+      return 'Confirmado';
+    case 'Pedido Enviado':
+      return 'Enviado';
+    case 'Pedido Rechazado':
+      return 'Rechazado';
+    default:
+      return estado;
+  }
+};
+
 const OrderTable = ({
   orders,
   onOpenComprobanteDialog,
@@ -69,176 +88,191 @@ const OrderTable = ({
   const theme = useTheme();
   const isSmallScreen = useMediaQuery(theme.breakpoints.down('sm'));
 
-  if (isSmallScreen) {
-    // Vista de tarjetas mejorada para pantallas pequeñas
-    return (
-      <Box sx={{ padding: 2 }}>
-        {orders.map((order) => (
-          <Card
-            key={order.id}
-            sx={{ marginBottom: 2, boxShadow: 3, borderRadius: 2 }}
-            className={getRowClassName(order.estado)}
-          >
-            <CardContent>
-              <Grid container spacing={1}>
-                <Grid item xs={8}>
-                  <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+  // Vista de tarjetas compactas con 2 cards por fila y botones en la parte inferior para pantallas pequeñas
+  return (
+    <Box sx={{ padding: 1 }}>
+      {isSmallScreen ? (
+        <Grid container spacing={1}>
+          {orders.map((order) => (
+            <Grid item xs={6} key={order.id}>
+              <Card
+                sx={{
+                  marginBottom: 1,
+                  boxShadow: 2,
+                  borderRadius: 2,
+                  padding: 1,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'space-between',
+                  height: '100%',
+                }}
+                className={getRowClassName(order.estado)}
+              >
+                <Box>
+                  <Typography
+                    variant="subtitle1"
+                    sx={{ fontWeight: 'bold', textAlign: 'center' }}
+                  >
                     {order.nombre_completo}
                   </Typography>
-                </Grid>
-                <Grid item xs={4} sx={{ textAlign: 'right' }}>
-                  <IconButton onClick={() => onEditOrder(order.id)}>
+                  <Typography
+                    variant="body2"
+                    color="textSecondary"
+                    sx={{ textAlign: 'center' }}
+                  >
+                    {order.fecha}
+                  </Typography>
+                  <Box sx={{ display: 'flex', justifyContent: 'center', mt: 0.5 }}>
+                    <Chip
+                      label={getShortStatus(order.estado)} // Usamos el estado abreviado
+                      color={
+                        order.estado === 'Pedido Recibido'
+                          ? 'default'
+                          : order.estado === 'Pedido Confirmado'
+                          ? 'primary'
+                          : order.estado === 'Pedido Enviado'
+                          ? 'success'
+                          : 'error'
+                      }
+                      size="small"
+                    />
+                  </Box>
+                  <Box sx={{ mt: 1 }}>
+                    <Grid container alignItems="center" justifyContent="center" spacing={1}>
+                      <Grid item>
+                        <Tooltip title="Ver Dirección">
+                          <IconButton
+                            onClick={() =>
+                              onOpenDireccionDialog(order.direccion, order.detalles_direccion)
+                            }
+                            size="small"
+                            sx={{ color: '#FE6401'}}
+                          >
+                            <LocationOnIcon />
+                          </IconButton>
+                        </Tooltip>
+                      </Grid>
+                      <Grid item>
+                        <Tooltip title="Ver Productos">
+                          <IconButton
+                            onClick={() => onOpenProductosDialog(order.productosDetalles)}
+                            size="small"
+                            sx={{ color: '#9040F5'}}
+                          >
+                            <ShoppingCartIcon />
+                          </IconButton>
+                        </Tooltip>
+                      </Grid>
+                     
+                    </Grid>
+                  </Box>
+                  <Typography
+                    variant="body2"
+                    sx={{ mt: 1, textAlign: 'center' }}
+                  >
+                    <strong>Total:</strong> {formatCurrency(order.total_venta)}
+                  </Typography>
+                  <Box sx={{ mt: 1 }}>
+                    <EstadoCell
+                      value={order.estado}
+                      row={order}
+                      onEstadoChange={onEstadoChange}
+                      center={true}
+                      isSmallScreen={isSmallScreen} // Pasamos la prop para manejar el texto
+                    />
+                  </Box>
+                </Box>
+                <Box sx={{ mt: 1, display: 'flex', justifyContent: 'center' }}>
+                  <IconButton onClick={() => onEditOrder(order.id)} size="small" sx={{ color: 'black'}}>
                     <EditIcon />
                   </IconButton>
-                  <IconButton onClick={() => onDeleteOrder(order.id)}>
+                  <IconButton onClick={() => onDeleteOrder(order.id)} size="small" sx={{ color: 'black'}}>
                     <DeleteIcon />
                   </IconButton>
-                </Grid>
-                <Grid item xs={12}>
-                  <Chip
-                    label={order.estado}
-                    color={
-                      order.estado === 'Pedido Recibido'
-                        ? 'default'
-                        : order.estado === 'Pedido Confirmado'
-                        ? 'primary'
-                        : order.estado === 'Pedido Enviado'
-                        ? 'success'
-                        : 'error'
-                    }
-                    icon={<LocalShippingIcon />}
-                    sx={{ marginBottom: 1 }}
-                  />
-                </Grid>
-                <Grid item xs={12}>
-                  <Typography variant="body2">
-                    <strong>Dirección:</strong>{' '}
-                    <span
-                      onClick={() =>
-                        onOpenDireccionDialog(order.direccion, order.detalles_direccion)
-                      }
-                      style={{ textDecoration: 'underline', color: '#1976d2', cursor: 'pointer' }}
-                    >
-                      {order.direccion}
-                    </span>
-                  </Typography>
-                </Grid>
-                <Grid item xs={12}>
-                  <Typography variant="body2">
-                    <strong>Fecha:</strong> {order.fecha}
-                  </Typography>
-                </Grid>
-                {order.fecha_entrega && (
-                  <Grid item xs={12}>
-                    <Typography variant="body2">
-                      <strong>Entrega:</strong> {order.fecha_entrega}
-                    </Typography>
-                  </Grid>
-                )}
-                <Grid item xs={12}>
-                  <Typography variant="body2">
-                    <strong>Total Venta:</strong> {formatCurrency(order.total_venta)}
-                  </Typography>
-                </Grid>
-                <Grid item xs={12}>
-                  <Button
-                    variant="outlined"
-                    fullWidth
-                    size="small"
-                    onClick={() => onOpenProductosDialog(order.productosDetalles)}
-                    sx={{ textTransform: 'none', marginY: 1 }}
-                  >
-                    Ver Productos
-                  </Button>
-                </Grid>
-                <Grid item xs={12}>
-                  <Typography variant="body2">
-                    <strong>Método de Pago:</strong> {order.metodo_pago}
-                  </Typography>
-                </Grid>
-                <Grid item xs={12}>
-                  <EstadoCell value={order.estado} row={order} onEstadoChange={onEstadoChange} />
-                </Grid>
-              </Grid>
-            </CardContent>
-          </Card>
-        ))}
-      </Box>
-    );
-  }
-
-  // Vista de tabla para pantallas grandes
-  return (
-    <Box sx={{ height: 'auto', width: '100%', padding: 2 }}>
-      <Paper sx={{ width: '100%', mb: 2 }}>
-        <TableContainer
-          component={Paper}
-          sx={{ marginTop: 3, borderRadius: 2, maxWidth: '100%', overflowX: 'auto' }}
-        >
-          <Table>
-            <TableHead>
-              <TableRow>
-                <StyledTableCell>Nombre</StyledTableCell>
-                <StyledTableCell>Dirección</StyledTableCell>
-                <StyledTableCell>Fecha</StyledTableCell>
-                <StyledTableCell>Entrega</StyledTableCell>
-                <StyledTableCell>Rango Horas</StyledTableCell>
-                <StyledTableCell>Total Productos</StyledTableCell>
-                <StyledTableCell>Total Domicilio</StyledTableCell>
-                <StyledTableCell>Total Venta</StyledTableCell>
-                <StyledTableCell>Productos</StyledTableCell>
-                <StyledTableCell>Método de Pago</StyledTableCell>
-                <StyledTableCell>Estado</StyledTableCell>
-                <StyledTableCell>Acciones</StyledTableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {orders.map((row) => (
-                <TableRow key={row.id} className={getRowClassName(row.estado)}>
-                  <TableCell>{row.nombre_completo}</TableCell>
-                  <TableCell
-                    onClick={() => onOpenDireccionDialog(row.direccion, row.detalles_direccion)}
-                    sx={{ cursor: 'pointer', textDecoration: 'underline', color: 'blue' }}
-                  >
-                    {row.direccion}
-                  </TableCell>
-                  <TableCell>{row.fecha}</TableCell>
-                  <TableCell>{row.fecha_entrega || 'No programada'}</TableCell>
-                  <TableCell>{row.rango_horas || 'No programado'}</TableCell>
-                  <TableCell>{formatCurrency(row.total)}</TableCell>
-                  <TableCell>{formatCurrency(row.total_domicilio)}</TableCell>
-                  <TableCell>{formatCurrency(row.total_venta)}</TableCell>
-                  <TableCell>
-                    <ProductosCell
-                      value={row.productos}
-                      row={row}
-                      onOpenDialog={onOpenProductosDialog}
-                    />
-                  </TableCell>
-                  <TableCell>
-                    <PaymentMethodCell
-                      value={row.metodo_pago}
-                      row={row}
-                      onOpenDialog={onOpenComprobanteDialog}
-                    />
-                  </TableCell>
-                  <TableCell>
-                    <EstadoCell value={row.estado} row={row} onEstadoChange={onEstadoChange} />
-                  </TableCell>
-                  <TableCell>
-                    <IconButton onClick={() => onEditOrder(row.id)}>
-                      <EditIcon />
-                    </IconButton>
-                    <IconButton onClick={() => onDeleteOrder(row.id)}>
-                      <DeleteIcon />
-                    </IconButton>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      </Paper>
+                </Box>
+              </Card>
+            </Grid>
+          ))}
+        </Grid>
+      ) : (
+        // Vista de tabla para pantallas grandes
+        <Box sx={{ height: 'auto', width: '100%', padding: 2 }}>
+          <Paper sx={{ width: '100%', mb: 2 }}>
+            <TableContainer
+              component={Paper}
+              sx={{ marginTop: 3, borderRadius: 2, maxWidth: '100%', overflowX: 'auto' }}
+            >
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    <StyledTableCell>Nombre</StyledTableCell>
+                    <StyledTableCell>Dirección</StyledTableCell>
+                    <StyledTableCell>Fecha</StyledTableCell>
+                    <StyledTableCell>Entrega</StyledTableCell>
+                    <StyledTableCell>Rango Horas</StyledTableCell>
+                    <StyledTableCell>Total Productos</StyledTableCell>
+                    <StyledTableCell>Total Domicilio</StyledTableCell>
+                    <StyledTableCell>Total Venta</StyledTableCell>
+                    <StyledTableCell>Productos</StyledTableCell>
+                    <StyledTableCell>Método de Pago</StyledTableCell>
+                    <StyledTableCell>Estado</StyledTableCell>
+                    <StyledTableCell>Acciones</StyledTableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {orders.map((row) => (
+                    <TableRow key={row.id} className={getRowClassName(row.estado)}>
+                      <TableCell>{row.nombre_completo}</TableCell>
+                      <TableCell
+                        onClick={() => onOpenDireccionDialog(row.direccion, row.detalles_direccion)}
+                        sx={{ cursor: 'pointer', textDecoration: 'underline', color: 'blue' }}
+                      >
+                        {row.direccion}
+                      </TableCell>
+                      <TableCell>{row.fecha}</TableCell>
+                      <TableCell>{row.fecha_entrega || 'No programada'}</TableCell>
+                      <TableCell>{row.rango_horas || 'No programado'}</TableCell>
+                      <TableCell>{formatCurrency(row.total)}</TableCell>
+                      <TableCell>{formatCurrency(row.total_domicilio)}</TableCell>
+                      <TableCell>{formatCurrency(row.total_venta)}</TableCell>
+                      <TableCell>
+                        <ProductosCell
+                          value={row.productos}
+                          row={row}
+                          onOpenDialog={onOpenProductosDialog}
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <PaymentMethodCell
+                          value={row.metodo_pago}
+                          row={row}
+                          onOpenDialog={onOpenComprobanteDialog}
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <EstadoCell
+                          value={row.estado}
+                          row={row}
+                          onEstadoChange={onEstadoChange}
+                          isSmallScreen={false} // En pantallas grandes usamos el texto completo
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <IconButton onClick={() => onEditOrder(row.id)}>
+                          <EditIcon />
+                        </IconButton>
+                        <IconButton onClick={() => onDeleteOrder(row.id)}>
+                          <DeleteIcon />
+                        </IconButton>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </Paper>
+        </Box>
+      )}
     </Box>
   );
 };

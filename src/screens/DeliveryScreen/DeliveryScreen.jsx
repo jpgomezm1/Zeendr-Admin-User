@@ -24,12 +24,20 @@ import AddOrderDialog from './AddOrderDialog';
 import EditOrderDialog from './EditOrderDialog';
 import './DeliveryScreen.css';
 import dayjs from 'dayjs';
+import isoWeek from 'dayjs/plugin/isoWeek';
+import weekOfYear from 'dayjs/plugin/weekOfYear';
+import weekYear from 'dayjs/plugin/weekYear';
 import { useSelector } from 'react-redux';
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 import { apiClient } from '../../apiClient';
 import CargaMasivaPedidosDialog from './CargaMasivaPedidosDialog';
 
 import ordenesIcon from '../../assets/icons/ordenes.png';
+
+// Extender dayjs con los plugins necesarios
+dayjs.extend(isoWeek);
+dayjs.extend(weekOfYear);
+dayjs.extend(weekYear);
 
 const DeliveryScreen = () => {
   const theme = useTheme();
@@ -42,7 +50,9 @@ const DeliveryScreen = () => {
   const [selectedComprobante, setSelectedComprobante] = useState('');
   const [selectedProductos, setSelectedProductos] = useState([]);
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1); // Selección por defecto: mes actual
+  const [selectedWeek, setSelectedWeek] = useState(dayjs().isoWeek()); // Selección por defecto: semana actual
   const [selectedDate, setSelectedDate] = useState(''); // Deshabilitado inicialmente
+  const [weeksInMonth, setWeeksInMonth] = useState([]);
   const [openAddOrderDialog, setOpenAddOrderDialog] = useState(false);
   const [editingOrder, setEditingOrder] = useState(null);
   const [openEditOrderDialog, setOpenEditOrderDialog] = useState(false);
@@ -82,6 +92,58 @@ const DeliveryScreen = () => {
     fetchOrders();
     fetchProducts();
   }, []);
+
+  // Función para obtener las semanas dentro del mes seleccionado
+  const getWeeksInMonth = (month, year) => {
+    const weeks = [];
+    let firstDayOfMonth = dayjs().year(year).month(month - 1).startOf('month');
+    let lastDayOfMonth = dayjs().year(year).month(month - 1).endOf('month');
+
+    // Comenzamos desde el inicio de la primera semana que incluye el mes
+    let currentWeekStart = firstDayOfMonth.startOf('isoWeek');
+
+    while (currentWeekStart.isBefore(lastDayOfMonth)) {
+      const weekNumber = currentWeekStart.isoWeek();
+      const weekStart = currentWeekStart;
+      const weekEnd = currentWeekStart.endOf('isoWeek');
+
+      // Verificamos si la semana se solapa con el mes seleccionado
+      if (weekEnd.isBefore(firstDayOfMonth)) {
+        // La semana termina antes de que empiece el mes, continuamos
+      } else if (weekStart.isAfter(lastDayOfMonth)) {
+        // La semana empieza después de que termina el mes, rompemos el ciclo
+        break;
+      } else {
+        weeks.push({
+          weekNumber,
+          weekRange: `${weekStart.format('D MMM')} - ${weekEnd.format('D MMM')}`,
+          weekStart,
+          weekEnd,
+        });
+      }
+
+      currentWeekStart = currentWeekStart.add(1, 'week');
+    }
+
+    return weeks;
+  };
+
+  useEffect(() => {
+    const year = dayjs().year(); // Puedes hacer que el año sea seleccionable si es necesario
+    const weeks = getWeeksInMonth(selectedMonth, year);
+    setWeeksInMonth(weeks);
+
+    // Verificar si la semana actual está dentro del mes seleccionado
+    const currentWeek = dayjs().isoWeek();
+    const currentWeekInMonth = weeks.find((week) => week.weekNumber === currentWeek);
+    if (currentWeekInMonth) {
+      setSelectedWeek(currentWeek);
+    } else {
+      setSelectedWeek(''); // O puedes seleccionar la primera semana por defecto
+    }
+
+    setSelectedDate(''); // Resetea la fecha seleccionada cuando cambia el mes
+  }, [selectedMonth]);
 
   const handleOpenDireccionDialog = (direccion, detallesDireccion) => {
     setSelectedDireccion(direccion);
@@ -139,7 +201,7 @@ const DeliveryScreen = () => {
   };
 
   const handleEditOrder = async (orderId) => {
-    const orderToEdit = orders.find(order => order.id === orderId);
+    const orderToEdit = orders.find((order) => order.id === orderId);
     setEditingOrder(orderToEdit);
     setOpenEditOrderDialog(true);
   };
@@ -148,7 +210,7 @@ const DeliveryScreen = () => {
     if (deletingOrderId) {
       try {
         await apiClient.delete(`/pedido/${deletingOrderId}`);
-        setOrders(prevOrders => prevOrders.filter(order => order.id !== deletingOrderId));
+        setOrders((prevOrders) => prevOrders.filter((order) => order.id !== deletingOrderId));
         setOpenDeleteDialog(false);
       } catch (error) {
         console.error('Error deleting order:', error);
@@ -167,31 +229,68 @@ const DeliveryScreen = () => {
 
   const handleMonthChange = (event) => {
     setSelectedMonth(event.target.value);
-    setSelectedDate(''); // Resetea la fecha seleccionada cuando se cambia el mes
+    setSelectedWeek(''); // Resetea la semana seleccionada cuando cambia el mes
+    setSelectedDate(''); // Resetea la fecha seleccionada cuando cambia el mes
+  };
+
+  const handleWeekChange = (event) => {
+    setSelectedWeek(event.target.value);
+    setSelectedDate(''); // Resetea la fecha seleccionada cuando cambia la semana
   };
 
   const handleDateChange = (event) => {
     setSelectedDate(event.target.value);
   };
 
+  // Generar las fechas únicas basadas en el mes y la semana seleccionados
   const uniqueDates = ['Todas', ...new Set(
     orders
-      .filter(order => new Date(order.fecha_hora).getMonth() + 1 === selectedMonth)
+      .filter((order) => {
+        const orderDate = dayjs(order.fecha_hora.split(' ')[0]);
+        const deliveryDate = order.fecha_entrega ? dayjs(order.fecha_entrega) : orderDate;
+
+        const isMonthMatch = orderDate.month() + 1 === selectedMonth;
+
+        let isWeekMatch = true;
+        if (selectedWeek !== '') {
+          isWeekMatch =
+            orderDate.isoWeek() === selectedWeek ||
+            deliveryDate.isoWeek() === selectedWeek;
+        }
+
+        return isMonthMatch && isWeekMatch;
+      })
       .flatMap((order) => {
         const dates = [order.fecha_hora.split(' ')[0]];
         if (order.fecha_entrega && order.fecha_entrega !== 'No programada') {
           dates.push(order.fecha_entrega);
         }
         return dates;
-      }).sort((a, b) => new Date(a) - new Date(b))
+      })
+      .sort((a, b) => new Date(a) - new Date(b))
   )];
 
   const filteredOrders = orders.filter((order) => {
-    const orderDate = order.fecha_hora.split(' ')[0];
-    const deliveryDate = order.fecha_entrega || orderDate;
-    const isDateMatch = selectedDate === '' || selectedDate === 'Todas' || selectedDate === orderDate || selectedDate === deliveryDate;
-    const isMonthMatch = new Date(order.fecha_hora).getMonth() + 1 === selectedMonth;
-    return isDateMatch && isMonthMatch;
+    const orderDateStr = order.fecha_hora.split(' ')[0];
+    const deliveryDateStr = order.fecha_entrega || orderDateStr;
+    const orderDate = dayjs(orderDateStr);
+    const deliveryDate = dayjs(deliveryDateStr);
+
+    const isMonthMatch = orderDate.month() + 1 === selectedMonth;
+
+    let isWeekMatch = true;
+    if (selectedWeek !== '') {
+      isWeekMatch =
+        orderDate.isoWeek() === selectedWeek ||
+        deliveryDate.isoWeek() === selectedWeek;
+    }
+
+    let isDateMatch = true;
+    if (selectedDate !== '' && selectedDate !== 'Todas') {
+      isDateMatch = orderDateStr === selectedDate || deliveryDateStr === selectedDate;
+    }
+
+    return isMonthMatch && isWeekMatch && isDateMatch;
   });
 
   const transformOrders = filteredOrders
@@ -229,11 +328,13 @@ const DeliveryScreen = () => {
         total: order.total_productos,
         total_con_descuento: order.total_con_descuento,
         total_domicilio: order.costo_domicilio,
-        total_venta: totalVenta
+        total_venta: totalVenta,
       };
     });
 
-  const summaryOrders = transformOrders.filter(order => ['Pedido Confirmado', 'Pedido Enviado'].includes(order.estado));
+  const summaryOrders = transformOrders.filter((order) =>
+    ['Pedido Confirmado', 'Pedido Enviado'].includes(order.estado)
+  );
 
   const totalVentas = summaryOrders.reduce((sum, order) => sum + order.total_venta, 0);
   const totalProductos = summaryOrders.reduce((sum, order) => sum + order.total, 0);
@@ -289,7 +390,7 @@ const DeliveryScreen = () => {
             textAlign: isSmallScreen ? 'center' : 'left',
           }}
         >
-          Aqui Aterrizan los Caprichos
+          Aquí Aterrizan los Caprichos
         </Typography>
       </Box>
       <SummaryCards
@@ -318,11 +419,26 @@ const DeliveryScreen = () => {
           </Select>
         </FormControl>
         <FormControl sx={{ minWidth: isSmallScreen ? '100%' : 200 }} disabled={!selectedMonth}>
+          <InputLabel>Filtrar por Semana</InputLabel>
+          <Select
+            value={selectedWeek}
+            onChange={handleWeekChange}
+            disabled={!selectedMonth}
+          >
+            <MenuItem value="">Todas</MenuItem>
+            {weeksInMonth.map((week) => (
+              <MenuItem key={week.weekNumber} value={week.weekNumber}>
+                {`Semana ${week.weekNumber} (${week.weekRange})`}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+        <FormControl sx={{ minWidth: isSmallScreen ? '100%' : 200 }} disabled={!selectedWeek}>
           <InputLabel>Filtrar por Fecha</InputLabel>
           <Select
             value={selectedDate}
             onChange={handleDateChange}
-            disabled={!selectedMonth}
+            disabled={!selectedWeek}
           >
             {uniqueDates.map((date, index) => (
               <MenuItem key={index} value={date}>

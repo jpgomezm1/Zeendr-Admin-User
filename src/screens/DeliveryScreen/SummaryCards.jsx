@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Typography, Card, CardContent, useTheme, useMediaQuery } from '@mui/material';
+import { Box, Typography, Card, CardContent, useTheme } from '@mui/material';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import PaymentIcon from '@mui/icons-material/Payment';
 import PendingActionsIcon from '@mui/icons-material/PendingActions';
@@ -43,7 +43,6 @@ const cardData = [
 
 const SummaryCards = (summary) => {
   const theme = useTheme();
-  const isSmallScreen = useMediaQuery(theme.breakpoints.down('sm'));
 
   const cardStyles = {
     width: '100%',
@@ -57,15 +56,18 @@ const SummaryCards = (summary) => {
     flexDirection: 'column',
     alignItems: 'center',
     background: 'linear-gradient(135deg, #7B11F5, #A46BF5)',
-    marginBottom: isSmallScreen ? theme.spacing(2) : 0,
   };
 
   return (
     <Box
       sx={{
         display: 'grid',
-        gridTemplateColumns: isSmallScreen ? '1fr' : 'repeat(4, 1fr)',
-        gap: isSmallScreen ? theme.spacing(2) : theme.spacing(1),
+        gridTemplateColumns: {
+          xs: 'repeat(2, 1fr)', // 2 columnas en pantallas extra pequeñas y pequeñas
+          sm: 'repeat(2, 1fr)',
+          md: 'repeat(4, 1fr)', // 4 columnas en pantallas medianas y superiores
+        },
+        gap: theme.spacing(2),
         marginBottom: 3,
       }}
     >
