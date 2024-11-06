@@ -1,3 +1,4 @@
+// App.js
 import React, { useState, useEffect } from 'react';
 import { Box, CssBaseline, ThemeProvider } from '@mui/material';
 import { createTheme } from '@mui/material/styles';
@@ -33,7 +34,7 @@ const theme = createTheme({
 });
 
 const ProtectedRoutes = () => {
-  const isAuthenticated = useSelector(state => state.auth.isAuthenticated);
+  const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
   const [showLoader, setShowLoader] = useState(false);
 
   useEffect(() => {
@@ -56,9 +57,23 @@ const ProtectedRoutes = () => {
   }
 
   return (
-    <Box sx={{ display: 'flex', justifyContent: 'center' }}>
-      <Navbar /> 
-      <Box component="main" sx={{ flexGrow: 1, p: 3, width: '67%', maxWidth: '1200px' }}> {/* Ajustar tamaño del contenedor */}
+    <Box
+      sx={{
+        display: 'flex',
+        flexDirection: { xs: 'column', sm: 'row' },
+        justifyContent: 'center',
+      }}
+    >
+      <Navbar />
+      <Box
+        component="main"
+        sx={{
+          flexGrow: 1,
+          p: 3,
+          width: { xs: '100%', sm: '67%' },
+          maxWidth: '1200px',
+        }}
+      >
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/orders" element={<DeliveryScreen />} />
@@ -85,7 +100,7 @@ const App = () => {
         <ThemeProvider theme={theme}>
           <CssBaseline />
           <ProtectedRoutes />
-          <Whatsapp /> 
+          <Whatsapp />
         </ThemeProvider>
       </Router>
     </Provider>
@@ -93,5 +108,4 @@ const App = () => {
 };
 
 export default App;
-
 
