@@ -211,7 +211,7 @@ const OrderTable = ({
                   <IconButton
                     onClick={() => onDeleteOrder(order.id)}
                     size="small"
-                    sx={{ color: 'black' }}
+                    sx={{ color: '#DC001A' }}
                   >
                     <DeleteIcon />
                   </IconButton>
