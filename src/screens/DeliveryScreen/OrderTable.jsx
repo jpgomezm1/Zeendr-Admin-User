@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Table,
   TableBody,
@@ -17,6 +17,11 @@ import {
   Chip,
   Card,
   Tooltip,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
 } from '@mui/material';
 import { styled } from '@mui/system';
 import PaymentMethodCell from './PaymentMethodCell';
@@ -24,10 +29,14 @@ import EstadoCell from './EstadoCell';
 import ProductosCell from './ProductosCell';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
-import LocalShippingIcon from '@mui/icons-material/LocalShipping';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import PaymentIcon from '@mui/icons-material/Payment';
+import WhatsAppIcon from '@mui/icons-material/WhatsApp'; // Importamos el icono de WhatsApp
+import CloseIcon from '@mui/icons-material/Close'; // Importamos el icono de cerrar
+import MuiIconButton from '@mui/material/IconButton'; // Aseguramos que el nombre no choque con el import anterior
+import { green } from '@mui/material/colors'; // Importamos los colores
 import './DeliveryScreen.css';
 
 const formatCurrency = (value) => {
@@ -88,6 +97,28 @@ const OrderTable = ({
   const theme = useTheme();
   const isSmallScreen = useMediaQuery(theme.breakpoints.down('sm'));
 
+  // Estados para manejar el diálogo de confirmación
+  const [openConfirmDialog, setOpenConfirmDialog] = useState(false);
+  const [selectedOrderId, setSelectedOrderId] = useState(null);
+
+  const handleCheckIconClick = (orderId) => {
+    // Mostrar diálogo de confirmación
+    setSelectedOrderId(orderId);
+    setOpenConfirmDialog(true);
+  };
+
+  const handleConfirmChange = (notificarCliente) => {
+    // Cambiar el estado del pedido a "Pedido Enviado"
+    onEstadoChange(selectedOrderId, 'Pedido Enviado', notificarCliente);
+    setOpenConfirmDialog(false);
+    setSelectedOrderId(null);
+  };
+
+  const handleCancelChange = () => {
+    setOpenConfirmDialog(false);
+    setSelectedOrderId(null);
+  };
+
   // Vista de tarjetas compactas con 2 cards por fila y botones en la parte inferior para pantallas pequeñas
   return (
     <Box sx={{ padding: 1 }}>
@@ -146,7 +177,7 @@ const OrderTable = ({
                               onOpenDireccionDialog(order.direccion, order.detalles_direccion)
                             }
                             size="small"
-                            sx={{ color: '#FE6401'}}
+                            sx={{ color: '#FE6401' }}
                           >
                             <LocationOnIcon />
                           </IconButton>
@@ -157,38 +188,43 @@ const OrderTable = ({
                           <IconButton
                             onClick={() => onOpenProductosDialog(order.productosDetalles)}
                             size="small"
-                            sx={{ color: '#9040F5'}}
+                            sx={{ color: '#9040F5' }}
                           >
                             <ShoppingCartIcon />
                           </IconButton>
                         </Tooltip>
                       </Grid>
-                     
                     </Grid>
                   </Box>
-                  <Typography
-                    variant="body2"
-                    sx={{ mt: 1, textAlign: 'center' }}
-                  >
+                  <Typography variant="body2" sx={{ mt: 1, textAlign: 'center' }}>
                     <strong>Total:</strong> {formatCurrency(order.total_venta)}
                   </Typography>
-                  <Box sx={{ mt: 1 }}>
-                    <EstadoCell
-                      value={order.estado}
-                      row={order}
-                      onEstadoChange={onEstadoChange}
-                      center={true}
-                      isSmallScreen={isSmallScreen} // Pasamos la prop para manejar el texto
-                    />
-                  </Box>
                 </Box>
                 <Box sx={{ mt: 1, display: 'flex', justifyContent: 'center' }}>
-                  <IconButton onClick={() => onEditOrder(order.id)} size="small" sx={{ color: 'black'}}>
+                  <IconButton
+                    onClick={() => onEditOrder(order.id)}
+                    size="small"
+                    sx={{ color: 'black' }}
+                  >
                     <EditIcon />
                   </IconButton>
-                  <IconButton onClick={() => onDeleteOrder(order.id)} size="small" sx={{ color: 'black'}}>
+                  <IconButton
+                    onClick={() => onDeleteOrder(order.id)}
+                    size="small"
+                    sx={{ color: 'black' }}
+                  >
                     <DeleteIcon />
                   </IconButton>
+                  {/* Agregamos el ícono de check si el pedido no ha sido enviado */}
+                  {order.estado !== 'Pedido Enviado' && (
+                    <IconButton
+                      onClick={() => handleCheckIconClick(order.id)}
+                      size="small"
+                      sx={{ color: 'green' }}
+                    >
+                      <CheckCircleIcon />
+                    </IconButton>
+                  )}
                 </Box>
               </Card>
             </Grid>
@@ -224,7 +260,9 @@ const OrderTable = ({
                     <TableRow key={row.id} className={getRowClassName(row.estado)}>
                       <TableCell>{row.nombre_completo}</TableCell>
                       <TableCell
-                        onClick={() => onOpenDireccionDialog(row.direccion, row.detalles_direccion)}
+                        onClick={() =>
+                          onOpenDireccionDialog(row.direccion, row.detalles_direccion)
+                        }
                         sx={{ cursor: 'pointer', textDecoration: 'underline', color: 'blue' }}
                       >
                         {row.direccion}
@@ -273,6 +311,79 @@ const OrderTable = ({
           </Paper>
         </Box>
       )}
+
+      {/* Diálogo de confirmación con estilo personalizado */}
+      <Dialog
+        open={openConfirmDialog}
+        onClose={handleCancelChange}
+        PaperProps={{
+          sx: {
+            borderRadius: '16px',
+            padding: 2,
+            maxWidth: 400,
+          },
+        }}
+      >
+        <DialogTitle
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            paddingBottom: 0,
+          }}
+        >
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            <WhatsAppIcon sx={{ color: green[500], marginRight: 1 }} />
+            <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+              Notificar al Cliente
+            </Typography>
+          </Box>
+          <MuiIconButton onClick={handleCancelChange} sx={{ color: 'grey.500' }}>
+            <CloseIcon />
+          </MuiIconButton>
+        </DialogTitle>
+        <DialogContent sx={{ paddingTop: 1 }}>
+          <DialogContentText sx={{ fontSize: '1rem', color: 'text.primary' }}>
+            ¿Deseas notificar al cliente por <strong>WhatsApp</strong> sobre el estado de su
+            pedido?
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions sx={{ justifyContent: 'center', paddingBottom: 2 }}>
+          <Button
+            onClick={() => handleConfirmChange(false)}
+            variant="outlined"
+            sx={{
+              borderColor: green[500],
+              color: green[500],
+              textTransform: 'none',
+              borderRadius: '8px',
+              paddingX: 3,
+              '&:hover': {
+                backgroundColor: green[50],
+                borderColor: green[700],
+              },
+            }}
+          >
+            No
+          </Button>
+          <Button
+            onClick={() => handleConfirmChange(true)}
+            variant="contained"
+            sx={{
+              backgroundColor: green[500],
+              color: '#fff',
+              textTransform: 'none',
+              borderRadius: '8px',
+              paddingX: 3,
+              '&:hover': {
+                backgroundColor: green[700],
+              },
+            }}
+          >
+            Sí, Notificar
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };

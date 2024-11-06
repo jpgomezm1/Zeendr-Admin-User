@@ -390,7 +390,7 @@ const DeliveryScreen = () => {
             textAlign: isSmallScreen ? 'center' : 'left',
           }}
         >
-          Aquí Aterrizan los Caprichos
+          Aqui Aterrizan los Caprichos
         </Typography>
       </Box>
       <SummaryCards
