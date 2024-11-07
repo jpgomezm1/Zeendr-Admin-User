@@ -1,15 +1,10 @@
+// DespachosScreen.jsx
 import React, { useState, useEffect } from 'react';
 import {
   Typography,
   Box,
   CircularProgress,
-  Card,
-  CardContent,
   Grid,
-  Accordion,
-  AccordionSummary,
-  AccordionDetails,
-  Chip,
   IconButton,
   Tooltip,
   Select,
@@ -20,40 +15,59 @@ import {
   Snackbar,
   Alert,
   useTheme,
+  Button,
+  Chip,
   Dialog,
   DialogTitle,
   DialogContent,
-  DialogContentText,
   DialogActions,
-  Button,
-  IconButton as MuiIconButton,
+  DialogContentText,
+  useMediaQuery,
 } from '@mui/material';
 import { useSelector } from 'react-redux';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import DoneIcon from '@mui/icons-material/Done';
-import WineBarIcon from '@mui/icons-material/WineBar';
 import WhatsAppIcon from '@mui/icons-material/WhatsApp';
 import CloseIcon from '@mui/icons-material/Close';
 import { green } from '@mui/material/colors';
 import { apiClient } from '../../apiClient';
 
 import EnviosIcon from '../../assets/icons/envios2.png';
+import ProductSummaryDialog from './ProductSummaryDialog';
+import PedidoCard from './PedidoCard';
+import DireccionDialog from './DireccionDialog';
+import ProductosDialog from './ProductosDialog';
+import DeliveryDialog from './DeliveryDialog'; // Importamos el nuevo componente
 
 const DespachosScreen = () => {
   const theme = useTheme();
+  const isSmallScreen = useMediaQuery(theme.breakpoints.down('sm'));
   const [pedidos, setPedidos] = useState([]);
-  const [productsMap, setProductsMap] = useState({}); // Nuevo estado para el mapa de productos
+  const [productsMap, setProductsMap] = useState({});
   const [loading, setLoading] = useState(true);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const token = useSelector((state) => state.auth.token);
   const [fadingOutPedidoId, setFadingOutPedidoId] = useState(null);
-  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1); // Selección por defecto: mes actual
-  const [selectedDate, setSelectedDate] = useState(''); // Deshabilitado inicialmente
+  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
+  const [selectedDate, setSelectedDate] = useState('');
   const [selectedEstado, setSelectedEstado] = useState('Pedido Confirmado');
-
-  // Estados para el diálogo
   const [openDialog, setOpenDialog] = useState(false);
   const [selectedPedidoId, setSelectedPedidoId] = useState(null);
+
+  // Estados para los diálogos de dirección y productos
+  const [openDireccionDialog, setOpenDireccionDialog] = useState(false);
+  const [direccionDialogContent, setDireccionDialogContent] = useState({
+    direccion: '',
+    detalles: '',
+    telefono: '',
+  });
+  const [openProductosDialog, setOpenProductosDialog] = useState(false);
+  const [productosDialogContent, setProductosDialogContent] = useState([]);
+
+  // Estado para el diálogo de resumen de productos
+  const [openProductSummaryDialog, setOpenProductSummaryDialog] = useState(false);
+  const [productSummary, setProductSummary] = useState([]);
+
+  // Estado para el diálogo de envío al domiciliario
+  const [openDeliveryDialog, setOpenDeliveryDialog] = useState(false);
 
   useEffect(() => {
     const fetchPedidosAndProducts = async () => {
@@ -71,14 +85,29 @@ const DespachosScreen = () => {
           }),
         ]);
 
-        setPedidos(pedidosResponse.data);
-
-        // Crear el mapa de productos
+        // Crear el mapa de productos con nombre y precio
         const productsMap = {};
         productsResponse.data.forEach((product) => {
-          productsMap[product.id] = product.nombre;
+          productsMap[product.id] = {
+            nombre: product.nombre,
+            precio: product.precio,
+          };
         });
         setProductsMap(productsMap);
+
+        // Agregar total_venta a cada pedido
+        const pedidosWithTotals = pedidosResponse.data.map((pedido) => {
+          const productos = JSON.parse(pedido.productos);
+          let total_venta = 0;
+          productos.forEach((prod) => {
+            const productData = productsMap[prod.id];
+            if (productData) {
+              total_venta += productData.precio * prod.quantity;
+            }
+          });
+          return { ...pedido, total_venta };
+        });
+        setPedidos(pedidosWithTotals);
       } catch (error) {
         console.error('Error fetching pedidos or products:', error);
       } finally {
@@ -89,22 +118,59 @@ const DespachosScreen = () => {
     fetchPedidosAndProducts();
   }, [token]);
 
+  const formatCurrency = (value) => {
+    return new Intl.NumberFormat('es-CO', {
+      style: 'currency',
+      currency: 'COP',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(value);
+  };
+
+  const getRowClassName = (estado) => {
+    switch (estado) {
+      case 'Pedido Recibido':
+        return 'pedido-recibido';
+      case 'Pedido Confirmado':
+        return 'pedido-confirmado';
+      case 'Pedido Enviado':
+        return 'pedido-enviado';
+      case 'Pedido Rechazado':
+        return 'pedido-rechazado';
+      default:
+        return '';
+    }
+  };
+
+  const getShortStatus = (estado) => {
+    switch (estado) {
+      case 'Pedido Recibido':
+        return 'Recibido';
+      case 'Pedido Confirmado':
+        return 'Confirmado';
+      case 'Pedido Enviado':
+        return 'Enviado';
+      case 'Pedido Rechazado':
+        return 'Rechazado';
+      default:
+        return estado;
+    }
+  };
+
   const handleMonthChange = (event) => {
     setSelectedMonth(event.target.value);
-    setSelectedDate(''); // Resetea la fecha seleccionada cuando se cambia el mes
+    setSelectedDate('');
   };
 
   const handleDateChange = (event) => {
     setSelectedDate(event.target.value);
   };
 
-  // Modificar handleEstadoChange para abrir el diálogo
   const handleEstadoChange = (pedidoId) => {
     setSelectedPedidoId(pedidoId);
     setOpenDialog(true);
   };
 
-  // Función para manejar el cierre del diálogo y actualizar el estado
   const handleCloseDialog = async (notificarCliente) => {
     setOpenDialog(false);
     try {
@@ -144,6 +210,32 @@ const DespachosScreen = () => {
     setSelectedEstado(event.target.value);
   };
 
+  const onOpenDireccionDialog = (direccion, detalles, telefono) => {
+    setDireccionDialogContent({ direccion, detalles, telefono });
+    setOpenDireccionDialog(true);
+  };
+
+  const handleCloseDireccionDialog = () => {
+    setOpenDireccionDialog(false);
+  };
+
+  const onOpenProductosDialog = (productos) => {
+    const productosArray = JSON.parse(productos).map((prod) => {
+      const productData = productsMap[prod.id];
+      return {
+        ...prod,
+        nombre: productData ? productData.nombre : 'Producto desconocido',
+        precio: productData ? productData.precio : 0,
+      };
+    });
+    setProductosDialogContent(productosArray);
+    setOpenProductosDialog(true);
+  };
+
+  const handleCloseProductosDialog = () => {
+    setOpenProductosDialog(false);
+  };
+
   const uniqueDates = [
     'Todas',
     ...new Set(
@@ -164,179 +256,154 @@ const DespachosScreen = () => {
       selectedDate === orderDate;
     const isMonthMatch =
       new Date(pedido.fecha_hora).getMonth() + 1 === selectedMonth;
-    return (
-      isDateMatch && isMonthMatch && pedido.estado === selectedEstado
-    );
+    return isDateMatch && isMonthMatch && pedido.estado === selectedEstado;
   });
 
-  const PedidoCard = ({ pedido }) => (
-    <Grid item xs={12} sm={6} md={4}>
-      <Card
-        sx={{
-          borderRadius: 3,
-          backgroundColor:
-            pedido.estado === 'Pedido Enviado' ? '#77DD77' : '#FFF',
-          boxShadow: 4,
-          transition: 'transform 0.3s ease, opacity 0.3s ease',
-          p: 2,
-          border: '1px solid',
-          borderColor: '#ddd',
-          opacity: fadingOutPedidoId === pedido.id ? 0 : 1,
-          transform:
-            fadingOutPedidoId === pedido.id ? 'scale(0.95)' : 'scale(1)',
-          '&:hover': {
-            boxShadow: 6,
-          },
-        }}
-      >
-        <CardContent>
-          <Box
-            display="flex"
-            justifyContent="space-between"
-            alignItems="center"
-            sx={{ mb: 1 }}
-          >
-            <Box>
-              <Typography variant="h6" fontWeight="bold">
-                {pedido.nombre_completo}
-              </Typography>
-              <Typography variant="body2" color="textSecondary">
-                {new Date(pedido.fecha_hora).toLocaleString('es-ES')}
-              </Typography>
-            </Box>
-            {pedido.estado === 'Pedido Confirmado' && (
-              <Tooltip title="Marcar como Enviado">
-                <IconButton
-                  sx={{ color: '#5F54FB' }}
-                  onClick={() => handleEstadoChange(pedido.id)}
-                >
-                  <DoneIcon />
-                </IconButton>
-              </Tooltip>
-            )}
-          </Box>
-          <Accordion sx={{ mb: 2 }}>
-            <AccordionSummary
-              expandIcon={<ExpandMoreIcon />}
-              aria-controls="panel1a-content"
-              id="panel1a-header"
-            >
-              <Typography
-                variant="subtitle1"
-                sx={{ fontWeight: 'bold', color: 'black' }}
-              >
-                Detalles del Pedido
-              </Typography>
-            </AccordionSummary>
-            <AccordionDetails>
-              <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
-                Dirección:
-                <Typography
-                  variant="body1"
-                  component="span"
-                  sx={{ fontWeight: 'normal', ml: 1 }}
-                >
-                  {pedido.direccion}
-                </Typography>
-              </Typography>
-              <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
-                Detalle:
-                <Typography
-                  variant="body1"
-                  component="span"
-                  sx={{ fontWeight: 'normal', ml: 1 }}
-                >
-                  {pedido.detalles_direccion}
-                </Typography>
-              </Typography>
-              <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
-                Contacto:
-                <Typography
-                  variant="body1"
-                  component="span"
-                  sx={{ fontWeight: 'normal', ml: 1 }}
-                >
-                  {pedido.numero_telefono}
-                </Typography>
-              </Typography>
-            </AccordionDetails>
-          </Accordion>
-          <Typography
-            variant="subtitle1"
-            sx={{ fontWeight: 'bold', mb: 1, color: 'black' }}
-          >
-            Productos:
-          </Typography>
-          <Box
-            sx={{
-              maxHeight: 150,
-              overflowY: 'auto',
-              mt: 1,
-              backgroundColor: '#f9f9f9',
-              p: 2,
-              borderRadius: 2,
-            }}
-          >
-            {JSON.parse(pedido.productos).map((prod, index) => (
-              <Box
-                key={index}
-                sx={{ display: 'flex', alignItems: 'center', mb: 1 }}
-              >
-                <WineBarIcon
-                  fontSize="small"
-                  sx={{ mr: 1, color: '#5F54FB' }}
-                />
-                <Typography
-                  variant="body1"
-                  sx={{ fontWeight: 'bold', color: '#5F54FB', flex: 1 }}
-                >
-                  {productsMap[prod.id] || 'Producto desconocido'}
-                </Typography>
-                <Chip
-                  label={`x${prod.quantity}`}
-                  size="small"
-                  sx={{ fontWeight: 'bold', ml: 1 }}
-                />
-              </Box>
-            ))}
-          </Box>
-        </CardContent>
-      </Card>
-    </Grid>
-  );
+  // Función para manejar la apertura del diálogo de resumen de productos
+  const handleOpenProductSummaryDialog = () => {
+    // Calcular el resumen de productos
+    const summary = {};
+
+    filteredPedidos.forEach((pedido) => {
+      const productos = JSON.parse(pedido.productos);
+      productos.forEach((prod) => {
+        const productId = prod.id;
+        const quantity = prod.quantity;
+        const productData = productsMap[productId];
+        const productName = productData ? productData.nombre : 'Producto desconocido';
+
+        if (!summary[productId]) {
+          summary[productId] = {
+            id: productId,
+            nombre: productName,
+            totalQuantity: 0,
+          };
+        }
+        summary[productId].totalQuantity += quantity;
+      });
+    });
+
+    // Convertir el resumen a un array
+    const summaryArray = Object.values(summary);
+    setProductSummary(summaryArray);
+    setOpenProductSummaryDialog(true);
+  };
+
+  const handleCloseProductSummaryDialog = () => {
+    setOpenProductSummaryDialog(false);
+  };
+
+  // Función para abrir el diálogo de envío al domiciliario
+  const handleOpenDeliveryDialog = () => {
+    setOpenDeliveryDialog(true);
+  };
+
+  const handleCloseDeliveryDialog = () => {
+    setOpenDeliveryDialog(false);
+  };
 
   return (
-    <Box sx={{ p: 4, minHeight: '100vh' }}>
-      <Box sx={{ display: 'flex', alignItems: 'center', marginBottom: 4 }}>
-        <img
-          src={EnviosIcon}
-          alt="Gestión de Pedidos"
-          style={{ width: 70, height: 70, marginRight: theme.spacing(2) }}
-        />
-        <Typography
-          variant="h3"
-          style={{ fontFamily: 'Providence Sans Pro', fontWeight: 'bold' }}
+    <Box
+      sx={{
+        p: { xs: 2, sm: 4 },
+        minHeight: '100vh',
+      }}
+    >
+      {/* Encabezado */}
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          flexDirection: { xs: 'column', sm: 'row' },
+          marginBottom: 4,
+          justifyContent: 'space-between',
+        }}
+      >
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+          }}
         >
-          Centro de Envios
-        </Typography>
+          <Box
+            sx={{
+              width: 70,
+              height: 70,
+              marginRight: { xs: 0, sm: theme.spacing(2) },
+              marginBottom: { xs: theme.spacing(2), sm: 0 },
+            }}
+          >
+            <img
+              src={EnviosIcon}
+              alt="Gestión de Pedidos"
+              style={{
+                width: '100%',
+                height: '100%',
+              }}
+            />
+          </Box>
+          <Typography
+            variant="h3"
+            style={{ fontFamily: 'Providence Sans Pro', fontWeight: 'bold' }}
+            sx={{
+              fontSize: { xs: '2rem', sm: '3rem' },
+              textAlign: { xs: 'center', sm: 'left' },
+            }}
+          >
+            Centro de Envios
+          </Typography>
+        </Box>
+        {/* Botones para abrir los diálogos */}
+        <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', mt: { xs: 2, sm: 0 } }}>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={handleOpenProductSummaryDialog}
+            sx={{backgroundColor: '#5E55FE', borderRadius: '16px', '&:hover': { backgroundColor: '#7b45a1' }}}
+          >
+            Resumen de Productos
+          </Button>
+          <Button
+            variant="contained"
+            color="secondary"
+            onClick={handleOpenDeliveryDialog}
+            startIcon={<WhatsAppIcon />}
+            sx={{backgroundColor: '#00AC47', borderRadius: '16px', '&:hover': { backgroundColor: '#007831' }}}
+          >
+            Reporte de Envios
+          </Button>
+        </Box>
       </Box>
+
+      {/* Filtros */}
       <Stack
-        direction="row"
+        direction={{ xs: 'column', sm: 'row' }}
         spacing={2}
         alignItems="center"
         sx={{ marginBottom: 4 }}
       >
-        <FormControl sx={{ minWidth: 200 }}>
+        <FormControl
+          sx={{
+            minWidth: { xs: '100%', sm: 200 },
+          }}
+        >
           <InputLabel>Filtrar por Mes</InputLabel>
           <Select value={selectedMonth} onChange={handleMonthChange}>
             {Array.from({ length: 12 }, (_, index) => (
               <MenuItem key={index + 1} value={index + 1}>
-                {new Date(0, index).toLocaleString('es-ES', { month: 'long' })}
+                {new Date(0, index).toLocaleString('es-ES', {
+                  month: 'long',
+                })}
               </MenuItem>
             ))}
           </Select>
         </FormControl>
-        <FormControl sx={{ minWidth: 200 }} disabled={!selectedMonth}>
+        <FormControl
+          sx={{
+            minWidth: { xs: '100%', sm: 200 },
+          }}
+          disabled={!selectedMonth}
+        >
           <InputLabel>Filtrar por Fecha</InputLabel>
           <Select
             value={selectedDate}
@@ -350,7 +417,11 @@ const DespachosScreen = () => {
             ))}
           </Select>
         </FormControl>
-        <FormControl sx={{ minWidth: 200 }}>
+        <FormControl
+          sx={{
+            minWidth: { xs: '100%', sm: 200 },
+          }}
+        >
           <InputLabel>Filtrar por Estado</InputLabel>
           <Select value={selectedEstado} onChange={handleEstadoSelectChange}>
             <MenuItem value="Pedido Confirmado">Pedido Confirmado</MenuItem>
@@ -358,7 +429,9 @@ const DespachosScreen = () => {
           </Select>
         </FormControl>
       </Stack>
-      <Grid container spacing={3}>
+
+      {/* Grid de Pedidos */}
+      <Grid container spacing={2}>
         {loading ? (
           <Box
             sx={{
@@ -379,10 +452,23 @@ const DespachosScreen = () => {
           </Box>
         ) : (
           filteredPedidos.map((pedido) => (
-            <PedidoCard key={pedido.id} pedido={pedido} />
+            <PedidoCard
+              key={pedido.id}
+              pedido={pedido}
+              productsMap={productsMap}
+              fadingOutPedidoId={fadingOutPedidoId}
+              onOpenDireccionDialog={onOpenDireccionDialog}
+              onOpenProductosDialog={onOpenProductosDialog}
+              handleEstadoChange={handleEstadoChange}
+              getRowClassName={getRowClassName}
+              getShortStatus={getShortStatus}
+              formatCurrency={formatCurrency}
+            />
           ))
         )}
       </Grid>
+
+      {/* Snackbar */}
       <Snackbar
         open={snackbarOpen}
         autoHideDuration={6000}
@@ -398,7 +484,7 @@ const DespachosScreen = () => {
         </Alert>
       </Snackbar>
 
-      {/* Diálogo para confirmar notificación al cliente */}
+      {/* Diálogo de Notificación */}
       <Dialog
         open={openDialog}
         onClose={handleCancelDialog}
@@ -410,20 +496,33 @@ const DespachosScreen = () => {
           },
         }}
       >
-        <DialogTitle sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingBottom: 0 }}>
+        <DialogTitle
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            paddingBottom: 0,
+          }}
+        >
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
             <WhatsAppIcon sx={{ color: green[500], marginRight: 1 }} />
             <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
               Notificar al Cliente
             </Typography>
           </Box>
-          <MuiIconButton onClick={handleCancelDialog} sx={{ color: 'grey.500' }}>
+          <IconButton
+            onClick={handleCancelDialog}
+            sx={{ color: 'grey.500' }}
+          >
             <CloseIcon />
-          </MuiIconButton>
+          </IconButton>
         </DialogTitle>
         <DialogContent sx={{ paddingTop: 1 }}>
-          <DialogContentText sx={{ fontSize: '1rem', color: 'text.primary' }}>
-            ¿Deseas notificar al cliente por <strong>WhatsApp</strong> sobre el estado de su pedido?
+          <DialogContentText
+            sx={{ fontSize: '1rem', color: 'text.primary' }}
+          >
+            ¿Deseas notificar al cliente por <strong>WhatsApp</strong> sobre el
+            estado de su pedido?
           </DialogContentText>
         </DialogContent>
         <DialogActions sx={{ justifyContent: 'center', paddingBottom: 2 }}>
@@ -462,6 +561,35 @@ const DespachosScreen = () => {
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* Diálogo de Dirección */}
+      <DireccionDialog
+        open={openDireccionDialog}
+        onClose={handleCloseDireccionDialog}
+        direccionContent={direccionDialogContent}
+      />
+
+      {/* Diálogo de Productos */}
+      <ProductosDialog
+        open={openProductosDialog}
+        onClose={handleCloseProductosDialog}
+        productosContent={productosDialogContent}
+      />
+
+      {/* Diálogo de Resumen de Productos */}
+      <ProductSummaryDialog
+        open={openProductSummaryDialog}
+        onClose={handleCloseProductSummaryDialog}
+        productSummary={productSummary}
+      />
+
+      {/* Diálogo de Envío al Domiciliario */}
+      <DeliveryDialog
+        open={openDeliveryDialog}
+        onClose={handleCloseDeliveryDialog}
+        pedidos={filteredPedidos}
+        productsMap={productsMap}
+      />
     </Box>
   );
 };

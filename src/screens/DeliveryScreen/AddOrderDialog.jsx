@@ -379,6 +379,7 @@ const AddOrderDialog = ({ open, handleClose, productsMap, setOrders, token, onOr
                 <MenuItem value="Efectivo">Efectivo</MenuItem>
                 <MenuItem value="Transferencia">Transferencia</MenuItem>
                 <MenuItem value="Tarjeta">Tarjeta</MenuItem>
+                <MenuItem value="Tarjeta">Pago Pendiente</MenuItem>
               </Select>
             </FormControl>
           </Grid>
