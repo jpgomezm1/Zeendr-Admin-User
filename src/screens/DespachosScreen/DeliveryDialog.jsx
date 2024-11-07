@@ -29,7 +29,8 @@ import DownloadIcon from '@mui/icons-material/Download';
 import CloseIcon from '@mui/icons-material/Close';
 import SearchIcon from '@mui/icons-material/Search';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
-import { Document, Packer, Paragraph, TextRun, HeadingLevel } from 'docx';
+// Eliminamos la importación de 'docx' ya que no lo usaremos
+// import { Document, Packer, Paragraph, TextRun, HeadingLevel } from 'docx';
 import { saveAs } from 'file-saver';
 
 const DeliveryDialog = ({ open, onClose, pedidos, productsMap }) => {
@@ -95,35 +96,36 @@ const DeliveryDialog = ({ open, onClose, pedidos, productsMap }) => {
     setWhatsappMessage(message);
   };
 
-  const generateOrderSummaryDocx = async () => {
-    const doc = new Document();
+  const generateOrderSummaryTxt = () => {
+    let content = '';
 
     selectedPedidos.forEach((pedido) => {
-      doc.addSection({
-        children: [
-          new Paragraph({
-            text: `Cliente: ${pedido.nombre_completo}`,
-            heading: HeadingLevel.HEADING_2,
-          }),
-          new Paragraph(`Dirección: ${pedido.direccion}`),
-          pedido.detalles_direccion && new Paragraph(`Detalles: ${pedido.detalles_direccion}`),
-          new Paragraph(`Teléfono: ${pedido.numero_telefono}`),
-          new Paragraph({
-            text: 'Productos:',
-            heading: HeadingLevel.HEADING_3,
-          }),
-          ...JSON.parse(pedido.productos).map((prod) => {
-            const productData = productsMap[prod.id];
-            const productName = productData ? productData.nombre : 'Producto desconocido';
-            return new Paragraph(`- ${productName} x${prod.quantity}`);
-          }),
-          new Paragraph(''), // Espacio
-        ].filter(Boolean),
-      });
+      content += `Cliente: ${pedido.nombre_completo}\n`;
+      content += `Dirección: ${pedido.direccion}\n`;
+      if (pedido.detalles_direccion) {
+        content += `Detalles: ${pedido.detalles_direccion}\n`;
+      }
+      content += `Teléfono: ${pedido.numero_telefono}\n`;
+      content += `Productos:\n`;
+      try {
+        const productos = JSON.parse(pedido.productos || '[]');
+        productos.forEach((prod) => {
+          const productData = productsMap[prod.id];
+          const productName = productData ? productData.nombre : 'Producto desconocido';
+          content += `- ${productName} x${prod.quantity}\n`;
+        });
+      } catch (error) {
+        console.error('Error al parsear productos:', error);
+      }
+      content += '\n'; // Agregar una línea vacía entre pedidos
     });
 
-    const blob = await Packer.toBlob(doc);
-    saveAs(blob, 'resumen_pedidos.docx');
+    // Obtener la fecha actual para el nombre del archivo
+    const today = new Date();
+    const dateString = today.toISOString().split('T')[0]; // Formato yyyy-mm-dd
+
+    const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+    saveAs(blob, `resumen_pedidos_${dateString}.txt`);
     setSnackbarOpen(true);
   };
 
@@ -242,7 +244,12 @@ const DeliveryDialog = ({ open, onClose, pedidos, productsMap }) => {
               startIcon={<WhatsAppIcon />}
               onClick={generateWhatsappMessage}
               disabled={selectedPedidos.length === 0}
-              sx={{backgroundColor: '#00AC47', borderRadius: '16px', textTransform: 'none','&:hover': { backgroundColor: '#007831' }}}
+              sx={{
+                backgroundColor: '#00AC47',
+                borderRadius: '16px',
+                textTransform: 'none',
+                '&:hover': { backgroundColor: '#007831' },
+              }}
             >
               Generar Mensaje de WhatsApp
             </Button>
@@ -253,9 +260,14 @@ const DeliveryDialog = ({ open, onClose, pedidos, productsMap }) => {
               variant="contained"
               color="secondary"
               startIcon={<DownloadIcon />}
-              onClick={generateOrderSummaryDocx}
+              onClick={generateOrderSummaryTxt}
               disabled={selectedPedidos.length === 0}
-              sx={{backgroundColor: '#2684FC', borderRadius: '16px', textTransform: 'none','&:hover': { backgroundColor: '#1e69c9' }}}
+              sx={{
+                backgroundColor: '#2684FC',
+                borderRadius: '16px',
+                textTransform: 'none',
+                '&:hover': { backgroundColor: '#1e69c9' },
+              }}
             >
               Descargar Resumen
             </Button>
@@ -278,7 +290,11 @@ const DeliveryDialog = ({ open, onClose, pedidos, productsMap }) => {
             />
             <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 1 }}>
               <CopyToClipboard text={whatsappMessage}>
-                <Button variant="outlined" startIcon={<FileCopyIcon />} sx={{ textTransform: 'none', fontWeight: 'bold'}}>
+                <Button
+                  variant="outlined"
+                  startIcon={<FileCopyIcon />}
+                  sx={{ textTransform: 'none', fontWeight: 'bold' }}
+                >
                   Copiar Mensaje
                 </Button>
               </CopyToClipboard>
