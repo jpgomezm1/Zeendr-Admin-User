@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import Plot from 'react-plotly.js';
-import { Box, FormControl, InputLabel, Select, MenuItem, ToggleButton, ToggleButtonGroup, Typography, Checkbox, FormControlLabel } from '@mui/material';
+import { Box, FormControl, InputLabel, Select, MenuItem, ToggleButton, ToggleButtonGroup, Typography } from '@mui/material';
 
 const SalesChart = ({ orders, deliveryCosts }) => {
   const [selectedMonth, setSelectedMonth] = useState(new Date().toISOString().slice(0, 7));
@@ -48,51 +48,89 @@ const SalesChart = ({ orders, deliveryCosts }) => {
       }, {})
     : getMonthlyData(selectedYear);
 
-  const data = [{
-    type: 'bar',
-    x: viewType === 'Diario' ? Object.keys(filteredTransactions) : ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'],
-    y: viewType === 'Diario' ? Object.values(filteredTransactions) : filteredTransactions,
-    marker: {
-      color: '#5E55FE'
+  const data = [
+    {
+      type: 'bar',
+      x: viewType === 'Diario' ? Object.keys(filteredTransactions) : ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'],
+      y: viewType === 'Diario' ? Object.values(filteredTransactions) : filteredTransactions,
+      marker: {
+        color: '#5E55FE',
+        opacity: 0.8,
+        line: {
+          color: '#3E3BA0',
+          width: 2,
+        },
+      },
+      hoverinfo: 'x+y',
+      hovertemplate: '%{x}<br>%{y:$,.2f}<extra></extra>',
     },
-    hoverinfo: 'x+y',
-    hovertemplate: '%{x}<br>%{y:$,.2f}<extra></extra>',
-  }];
+  ];
 
   const annotations = (viewType === 'Diario' ? Object.entries(filteredTransactions) : filteredTransactions.map((value, index) => ([index, value])))
     .map(([key, value]) => ({
       x: viewType === 'Diario' ? key : ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'][key],
       y: value,
-      text: `$${value.toLocaleString('es')}`,
+      text: new Intl.NumberFormat('es-CO', {
+        style: 'currency',
+        currency: 'COP',
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0,
+      }).format(value),
       xanchor: 'center',
       yanchor: 'bottom',
       showarrow: false,
       font: {
-        family: 'Poppins',
-        size: 15,
-        color: 'black',
-        weight: 'bold',
+        family: 'Poppins, sans-serif',
+        size: 14,
+        color: '#333333',
       },
     }));
 
   const layout = {
-    font: {
-      family: 'Poppins',
+    title: {
+      text: viewType === 'Diario' ? 'Valor de Transacciones Diarias' : 'Valor de Transacciones Mensuales',
+      font: {
+        family: 'Poppins, sans-serif',
+        size: 24,
+        color: '#333333',
+        weight: 'bold',
+      },
+      xref: 'paper',
+      x: 0.5,
+      xanchor: 'center',
     },
-    width: 1400,
-    height: 600,
+    plot_bgcolor: 'transparent',
+    paper_bgcolor: '#ffffff',
+    xaxis: {
+      showgrid: false,
+      tickfont: {
+        family: 'Roboto, sans-serif',
+        size: 14,
+        color: '#666666',
+      },
+    },
+    yaxis: {
+      showgrid: true,
+      gridcolor: '#eaeaea',
+      tickfont: {
+        family: 'Roboto, sans-serif',
+        size: 14,
+        color: '#666666',
+      },
+    },
     margin: {
-      l: 50,
-      r: 50,
-      b: 100,
-      t: 100,
-      pad: 4
+      l: 60,
+      r: 30,
+      b: 50,
+      t: 50,
     },
-    paper_bgcolor: '#f8f9fa',
-    plot_bgcolor: '#f8f9fa',
-    showlegend: false,
+    hovermode: 'closest',
+    height: 400,
     annotations: annotations,
   };
+
+  const uniqueMonths = Array.from(new Set(orders.map(order => order.fecha_hora.slice(0, 7)))).sort();
+  const uniqueYears = Array.from(new Set(orders.map(order => order.fecha_hora.slice(0, 4)))).sort();
 
   const handleMonthChange = (event) => {
     setSelectedMonth(event.target.value);
@@ -108,25 +146,24 @@ const SalesChart = ({ orders, deliveryCosts }) => {
     }
   };
 
-  const handleShowTotalChange = (event) => {
-    setShowTotal(event.target.checked);
-  };
-
-  const uniqueMonths = Array.from(new Set(orders.map(order => order.fecha_hora.slice(0, 7)))).sort();
-  const uniqueYears = Array.from(new Set(orders.map(order => order.fecha_hora.slice(0, 4)))).sort();
-
-  const getLocaleDateString = (dateString) => {
-    const [year, month] = dateString.split("-");
-    const date = new Date(year, month - 1, 1);
-    return date.toLocaleDateString('es', { month: 'long', year: 'numeric' });
-  };
-
   return (
-    <Box sx={{ p: 4 }}>
+    <Box
+      sx={{
+        padding: '20px',
+        backgroundColor: '#ffffff',
+        borderRadius: '16px',
+        boxShadow: '0px 8px 16px rgba(0, 0, 0, 0.1)',
+        mt: 6,
+        mb: 6,
+        maxWidth: '1000px',
+        margin: '0 auto',
+      }}
+    >
       <Typography variant="h4" gutterBottom sx={{ textAlign: 'center', marginBottom: '20px' }}>
-        Valor de transacciones por fecha
+        Valor de Transacciones
       </Typography>
 
+      {/* Toggle de vista */}
       <Box sx={{ maxWidth: 300, mb: 2, display: 'flex', justifyContent: 'center' }}>
         <ToggleButtonGroup
           value={viewType}
@@ -138,44 +175,36 @@ const SalesChart = ({ orders, deliveryCosts }) => {
         </ToggleButtonGroup>
       </Box>
 
-      <Box sx={{ maxWidth: 300, mb: 2, display: 'flex', justifyContent: 'center' }}>
-        <FormControlLabel
-          control={<Checkbox checked={showTotal} onChange={handleShowTotalChange} />}
-          label="Mostrar valores totales"
-        />
-      </Box>
-
+      {/* Dropdown para Mes o Año */}
       {viewType === 'Diario' ? (
-        <Box sx={{ maxWidth: 300, mb: 2 }}>
-          <FormControl margin="normal" sx={{ width: '60%', mb: 2 }}>
+        <Box sx={{ maxWidth: 300, mb: 2, display: 'flex', justifyContent: 'center' }}>
+          <FormControl fullWidth>
             <InputLabel id="month-select-label">Mes</InputLabel>
             <Select
               labelId="month-select-label"
               id="month-select"
               value={selectedMonth}
-              label="Mes"
               onChange={handleMonthChange}
             >
-              {uniqueMonths.map(month => (
+              {uniqueMonths.map((month) => (
                 <MenuItem key={month} value={month}>
-                  {getLocaleDateString(month)}
+                  {month}
                 </MenuItem>
               ))}
             </Select>
           </FormControl>
         </Box>
       ) : (
-        <Box sx={{ maxWidth: 300, mb: 2 }}>
-          <FormControl margin="normal" sx={{ width: '60%', mb: 2 }}>
+        <Box sx={{ maxWidth: 300, mb: 2, display: 'flex', justifyContent: 'center' }}>
+          <FormControl fullWidth>
             <InputLabel id="year-select-label">Año</InputLabel>
             <Select
               labelId="year-select-label"
               id="year-select"
               value={selectedYear}
-              label="Año"
               onChange={handleYearChange}
             >
-              {uniqueYears.map(year => (
+              {uniqueYears.map((year) => (
                 <MenuItem key={year} value={year}>
                   {year}
                 </MenuItem>
@@ -185,10 +214,19 @@ const SalesChart = ({ orders, deliveryCosts }) => {
         </Box>
       )}
 
-      <Plot data={data} layout={layout} />
+      <Box sx={{ width: '100%' }}>
+        <Plot
+          data={data}
+          layout={layout}
+          style={{ width: '100%', height: '100%' }}
+          config={{
+            responsive: true,
+            displayModeBar: false,
+          }}
+        />
+      </Box>
     </Box>
   );
 };
 
 export default SalesChart;
-

@@ -205,7 +205,6 @@ const DataScreen = () => {
             <SummaryKPI orders={orders} productsMap={productsMap} />
             <SalesChart orders={orders} deliveryCosts={deliveryCosts} productsMap={productsMap} />
             <TransactionCountChart orders={orders} />
-            <SalesDataViewer orders={orders} productsMap={productsMap} />
           </>
         )}
       </TabPanel>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import Plot from 'react-plotly.js';
 import { Box, FormControl, InputLabel, Select, MenuItem, ToggleButton, ToggleButtonGroup, Typography } from '@mui/material';
 
@@ -46,16 +46,23 @@ const TransactionCountChart = ({ orders }) => {
       }, {})
     : getMonthlyData(selectedYear);
 
-  const data = [{
-    type: 'bar',
-    x: viewType === 'Diario' ? Object.keys(filteredTransactions) : ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'],
-    y: viewType === 'Diario' ? Object.values(filteredTransactions) : filteredTransactions,
-    marker: {
-      color: '#5E55FE'
+  const data = [
+    {
+      type: 'bar',
+      x: viewType === 'Diario' ? Object.keys(filteredTransactions) : ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'],
+      y: viewType === 'Diario' ? Object.values(filteredTransactions) : filteredTransactions,
+      marker: {
+        color: '#5E55FE',
+        opacity: 0.8,
+        line: {
+          color: '#3E3BA0',
+          width: 2,
+        },
+      },
+      hoverinfo: 'x+y',
+      hovertemplate: '%{x}<br>%{y}<extra></extra>',
     },
-    hoverinfo: 'x+y',
-    hovertemplate: '%{x}<br>%{y}<extra></extra>',
-  }];
+  ];
 
   const annotations = (viewType === 'Diario' ? Object.entries(filteredTransactions) : filteredTransactions.map((value, index) => ([index, value])))
     .map(([key, value]) => ({
@@ -66,29 +73,52 @@ const TransactionCountChart = ({ orders }) => {
       yanchor: 'bottom',
       showarrow: false,
       font: {
-        family: 'Poppins',
-        size: 15,
-        color: 'black',
-        weight: 'bold',
+        family: 'Poppins, sans-serif',
+        size: 14,
+        color: '#333333',
       },
     }));
 
   const layout = {
-    font: {
-      family: 'Poppins',
+    title: {
+      text: viewType === 'Diario' ? 'Cantidad de Transacciones Diarias' : 'Cantidad de Transacciones Mensuales',
+      font: {
+        family: 'Poppins, sans-serif',
+        size: 24,
+        color: '#333333',
+        weight: 'bold',
+      },
+      xref: 'paper',
+      x: 0.5,
+      xanchor: 'center',
     },
-    width: 1400,
-    height: 600,
+    plot_bgcolor: 'transparent',
+    paper_bgcolor: '#ffffff',
+    xaxis: {
+      showgrid: false,
+      tickfont: {
+        family: 'Roboto, sans-serif',
+        size: 14,
+        color: '#666666',
+      },
+    },
+    yaxis: {
+      showgrid: true,
+      gridcolor: '#eaeaea',
+      tickfont: {
+        family: 'Roboto, sans-serif',
+        size: 14,
+        color: '#666666',
+      },
+    },
     margin: {
-      l: 50,
-      r: 50,
-      b: 100,
-      t: 100,
-      pad: 4
+      l: 60,
+      r: 30,
+      b: 50,
+      t: 50,
     },
-    paper_bgcolor: '#f8f9fa',
-    plot_bgcolor: '#f8f9fa',
-    showlegend: false,
+    hovermode: 'closest',
+    height: 400,
     annotations: annotations,
   };
 
@@ -110,17 +140,27 @@ const TransactionCountChart = ({ orders }) => {
   const uniqueYears = Array.from(new Set(orders.map(order => order.fecha_hora.slice(0, 4)))).sort();
 
   const getLocaleDateString = (dateString) => {
-    const [year, month] = dateString.split("-");
+    const [year, month] = dateString.split('-');
     const date = new Date(year, month - 1, 1);
     return date.toLocaleDateString('es', { month: 'long', year: 'numeric' });
   };
 
   return (
-    <Box sx={{ p: 4 }}>
+    <Box
+      sx={{
+        padding: '20px',
+        backgroundColor: '#ffffff',
+        borderRadius: '16px',
+        boxShadow: '0px 8px 16px rgba(0, 0, 0, 0.1)',
+        maxWidth: '1000px',
+        margin: '0 auto',
+      }}
+    >
       <Typography variant="h4" gutterBottom sx={{ textAlign: 'center', marginBottom: '20px' }}>
-        Cantidad de transacciones por fecha
+        Cantidad de Transacciones
       </Typography>
 
+      {/* Toggle de vista */}
       <Box sx={{ maxWidth: 300, mb: 2, display: 'flex', justifyContent: 'center' }}>
         <ToggleButtonGroup
           value={viewType}
@@ -132,18 +172,18 @@ const TransactionCountChart = ({ orders }) => {
         </ToggleButtonGroup>
       </Box>
 
+      {/* Dropdown para Mes o Año */}
       {viewType === 'Diario' ? (
-        <Box sx={{ maxWidth: 300, mb: 2 }}>
-          <FormControl margin="normal" sx={{ width: '60%', mb: 2 }}>
+        <Box sx={{ maxWidth: 300, mb: 2, display: 'flex', justifyContent: 'center' }}>
+          <FormControl fullWidth>
             <InputLabel id="month-select-label">Mes</InputLabel>
             <Select
               labelId="month-select-label"
               id="month-select"
               value={selectedMonth}
-              label="Mes"
               onChange={handleMonthChange}
             >
-              {uniqueMonths.map(month => (
+              {uniqueMonths.map((month) => (
                 <MenuItem key={month} value={month}>
                   {getLocaleDateString(month)}
                 </MenuItem>
@@ -152,17 +192,16 @@ const TransactionCountChart = ({ orders }) => {
           </FormControl>
         </Box>
       ) : (
-        <Box sx={{ maxWidth: 300, mb: 2 }}>
-          <FormControl margin="normal" sx={{ width: '60%', mb: 2 }}>
+        <Box sx={{ maxWidth: 300, mb: 2, display: 'flex', justifyContent: 'center' }}>
+          <FormControl fullWidth>
             <InputLabel id="year-select-label">Año</InputLabel>
             <Select
               labelId="year-select-label"
               id="year-select"
               value={selectedYear}
-              label="Año"
               onChange={handleYearChange}
             >
-              {uniqueYears.map(year => (
+              {uniqueYears.map((year) => (
                 <MenuItem key={year} value={year}>
                   {year}
                 </MenuItem>
@@ -172,7 +211,17 @@ const TransactionCountChart = ({ orders }) => {
         </Box>
       )}
 
-      <Plot data={data} layout={layout} />
+      <Box sx={{ width: '100%' }}>
+        <Plot
+          data={data}
+          layout={layout}
+          style={{ width: '100%', height: '100%' }}
+          config={{
+            responsive: true,
+            displayModeBar: false,
+          }}
+        />
+      </Box>
     </Box>
   );
 };
