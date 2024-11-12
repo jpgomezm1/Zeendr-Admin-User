@@ -33,9 +33,9 @@ import { apiClient } from '../../apiClient';
 import EnviosIcon from '../../assets/icons/envios2.png';
 import ProductSummaryDialog from './ProductSummaryDialog';
 import PedidoCard from './PedidoCard';
-import DireccionDialog from './DireccionDialog';
+// Importamos el diálogo combinado
 import ProductosDialog from './ProductosDialog';
-import DeliveryDialog from './DeliveryDialog'; // Importamos el nuevo componente
+import DeliveryDialog from './DeliveryDialog'; // Importamos el componente de Delivery
 
 const DespachosScreen = () => {
   const theme = useTheme();
@@ -52,14 +52,13 @@ const DespachosScreen = () => {
   const [openDialog, setOpenDialog] = useState(false);
   const [selectedPedidoId, setSelectedPedidoId] = useState(null);
 
-  // Estados para los diálogos de dirección y productos
-  const [openDireccionDialog, setOpenDireccionDialog] = useState(false);
+  // Estados para el diálogo combinado
+  const [openPedidoDialog, setOpenPedidoDialog] = useState(false);
   const [direccionDialogContent, setDireccionDialogContent] = useState({
     direccion: '',
     detalles: '',
     telefono: '',
   });
-  const [openProductosDialog, setOpenProductosDialog] = useState(false);
   const [productosDialogContent, setProductosDialogContent] = useState([]);
 
   // Estado para el diálogo de resumen de productos
@@ -210,17 +209,17 @@ const DespachosScreen = () => {
     setSelectedEstado(event.target.value);
   };
 
-  const onOpenDireccionDialog = (direccion, detalles, telefono) => {
-    setDireccionDialogContent({ direccion, detalles, telefono });
-    setOpenDireccionDialog(true);
-  };
+  // Función para abrir el diálogo combinado
+  const onOpenPedidoDialog = (pedido) => {
+    // Preparar contenido de dirección
+    setDireccionDialogContent({
+      direccion: pedido.direccion,
+      detalles: pedido.detalles_direccion,
+      telefono: pedido.numero_telefono,
+    });
 
-  const handleCloseDireccionDialog = () => {
-    setOpenDireccionDialog(false);
-  };
-
-  const onOpenProductosDialog = (productos) => {
-    const productosArray = JSON.parse(productos).map((prod) => {
+    // Preparar contenido de productos
+    const productosArray = JSON.parse(pedido.productos).map((prod) => {
       const productData = productsMap[prod.id];
       return {
         ...prod,
@@ -229,11 +228,13 @@ const DespachosScreen = () => {
       };
     });
     setProductosDialogContent(productosArray);
-    setOpenProductosDialog(true);
+
+    // Abrir el diálogo
+    setOpenPedidoDialog(true);
   };
 
-  const handleCloseProductosDialog = () => {
-    setOpenProductosDialog(false);
+  const handleClosePedidoDialog = () => {
+    setOpenPedidoDialog(false);
   };
 
   const uniqueDates = [
@@ -457,8 +458,7 @@ const DespachosScreen = () => {
               pedido={pedido}
               productsMap={productsMap}
               fadingOutPedidoId={fadingOutPedidoId}
-              onOpenDireccionDialog={onOpenDireccionDialog}
-              onOpenProductosDialog={onOpenProductosDialog}
+              onOpenPedidoDialog={onOpenPedidoDialog}
               handleEstadoChange={handleEstadoChange}
               getRowClassName={getRowClassName}
               getShortStatus={getShortStatus}
@@ -562,18 +562,12 @@ const DespachosScreen = () => {
         </DialogActions>
       </Dialog>
 
-      {/* Diálogo de Dirección */}
-      <DireccionDialog
-        open={openDireccionDialog}
-        onClose={handleCloseDireccionDialog}
-        direccionContent={direccionDialogContent}
-      />
-
-      {/* Diálogo de Productos */}
+      {/* Diálogo combinado de Pedido */}
       <ProductosDialog
-        open={openProductosDialog}
-        onClose={handleCloseProductosDialog}
+        open={openPedidoDialog}
+        onClose={handleClosePedidoDialog}
         productosContent={productosDialogContent}
+        direccionContent={direccionDialogContent}
       />
 
       {/* Diálogo de Resumen de Productos */}

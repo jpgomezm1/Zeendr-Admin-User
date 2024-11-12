@@ -7,22 +7,18 @@ import {
   Grid,
   IconButton,
   Tooltip,
-  Chip,
   Divider,
 } from '@mui/material';
 import InfoIcon from '@mui/icons-material/Info';
-import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
-import ScheduleIcon from '@mui/icons-material/Schedule';
 import MonetizationOnIcon from '@mui/icons-material/MonetizationOn';
 
 const PedidoCard = ({
   pedido,
   productsMap,
   fadingOutPedidoId,
-  onOpenDireccionDialog,
-  onOpenProductosDialog,
+  onOpenPedidoDialog,
   handleEstadoChange,
   getRowClassName,
   getShortStatus,
@@ -32,8 +28,8 @@ const PedidoCard = ({
     <Card
       sx={{
         marginBottom: 2,
-        boxShadow: 2,
-        borderRadius: 2,
+        border: '1px solid #e0e0e0', // Borde definido
+        borderRadius: 4, // Esquinas más redondeadas
         padding: 2,
         display: 'flex',
         flexDirection: 'column',
@@ -44,7 +40,7 @@ const PedidoCard = ({
         transform:
           fadingOutPedidoId === pedido.id ? 'scale(0.95)' : 'scale(1)',
         '&:hover': {
-          boxShadow: 6,
+          boxShadow: 4, // Sombra más pronunciada al hacer hover
         },
       }}
       className={getRowClassName(pedido.estado)}
@@ -52,8 +48,8 @@ const PedidoCard = ({
       <Box>
         {/* Nombre del Cliente */}
         <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-          <AccountCircleIcon sx={{ mr: 1, color: 'primary.main' }} />
-          <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
+          <AccountCircleIcon sx={{ mr: 1, color: '#5E35B1' }} />
+          <Typography variant="subtitle1" sx={{ fontWeight: 'bold', color: '#424242' }}>
             {pedido.nombre_completo}
           </Typography>
         </Box>
@@ -62,44 +58,41 @@ const PedidoCard = ({
 
         {/* Total de la Venta */}
         <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-          <MonetizationOnIcon sx={{ mr: 1, color: 'green' }} />
-          <Typography variant="body2">
+          <MonetizationOnIcon sx={{ mr: 1, color: '#388E3C' }} />
+          <Typography variant="body2" sx={{ color: '#424242' }}>
             <strong>Total:</strong> {formatCurrency(pedido.total_venta)}
           </Typography>
         </Box>
 
         {/* Botones de Acción */}
-        <Box sx={{ display: 'flex', justifyContent: 'space-around', mt: 1 }}>
-          <Tooltip title="Ver Información">
+        <Box sx={{ display: 'flex', justifyContent: 'space-around', mt: 2 }}>
+          <Tooltip title="Ver Detalles del Pedido">
             <IconButton
-              onClick={() =>
-                onOpenDireccionDialog(
-                  pedido.direccion,
-                  pedido.detalles_direccion,
-                  pedido.numero_telefono
-                )
-              }
-              size="small"
-              sx={{ color: '#FE6401' }}
+              onClick={() => onOpenPedidoDialog(pedido)}
+              size="large"
+              sx={{
+                color: '#1976D2',
+                backgroundColor: '#E3F2FD',
+                '&:hover': {
+                  backgroundColor: '#BBDEFB',
+                },
+              }}
             >
               <InfoIcon />
-            </IconButton>
-          </Tooltip>
-          <Tooltip title="Ver Productos">
-            <IconButton
-              onClick={() => onOpenProductosDialog(pedido.productos)}
-              size="small"
-              sx={{ color: '#9040F5' }}
-            >
-              <ShoppingCartIcon />
             </IconButton>
           </Tooltip>
           {pedido.estado !== 'Pedido Enviado' && (
             <Tooltip title="Marcar como Enviado">
               <IconButton
                 onClick={() => handleEstadoChange(pedido.id)}
-                size="small"
-                sx={{ color: 'green' }}
+                size="large"
+                sx={{
+                  color: '#388E3C',
+                  backgroundColor: '#E8F5E9',
+                  '&:hover': {
+                    backgroundColor: '#C8E6C9',
+                  },
+                }}
               >
                 <CheckCircleIcon />
               </IconButton>

@@ -1,4 +1,3 @@
-// ProductosDialog.jsx
 import React from 'react';
 import {
   Dialog,
@@ -11,11 +10,14 @@ import {
   Chip,
 } from '@mui/material';
 import WineBarIcon from '@mui/icons-material/WineBar';
+import HomeIcon from '@mui/icons-material/Home';
+import PhoneIcon from '@mui/icons-material/Phone';
 
 const ProductosDialog = ({
   open,
   onClose,
   productosContent,
+  direccionContent,
 }) => (
   <Dialog
     open={open}
@@ -24,16 +26,36 @@ const ProductosDialog = ({
       sx: {
         borderRadius: '16px',
         padding: 2,
-        maxWidth: 400,
+        maxWidth: 500,
       },
     }}
   >
     <DialogTitle>
       <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
-        Productos del Pedido
+        Detalles del Pedido
       </Typography>
     </DialogTitle>
     <DialogContent>
+      {/* Información del Cliente */}
+      <Box sx={{ mb: 2 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+          <HomeIcon sx={{ mr: 1, color: 'primary.main' }} />
+          <Typography variant="body1">
+            <strong>Dirección:</strong> {direccionContent.direccion}
+          </Typography>
+        </Box>
+        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+          <PhoneIcon sx={{ mr: 1, color: 'primary.main' }} />
+          <Typography variant="body1">
+            <strong>Teléfono:</strong> {direccionContent.telefono}
+          </Typography>
+        </Box>
+      </Box>
+
+      {/* Productos del Pedido */}
+      <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mb: 1 }}>
+        Productos:
+      </Typography>
       {productosContent.map((prod, index) => (
         <Box
           key={index}
