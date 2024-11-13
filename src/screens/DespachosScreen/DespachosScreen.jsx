@@ -23,10 +23,13 @@ import {
   DialogActions,
   DialogContentText,
   useMediaQuery,
+  TextField,
+  InputAdornment,
 } from '@mui/material';
 import { useSelector } from 'react-redux';
 import WhatsAppIcon from '@mui/icons-material/WhatsApp';
 import CloseIcon from '@mui/icons-material/Close';
+import SearchIcon from '@mui/icons-material/Search';
 import { green } from '@mui/material/colors';
 import { apiClient } from '../../apiClient';
 
@@ -49,6 +52,7 @@ const DespachosScreen = () => {
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
   const [selectedDate, setSelectedDate] = useState('');
   const [selectedEstado, setSelectedEstado] = useState('Pedido Confirmado');
+  const [searchName, setSearchName] = useState('');
   const [openDialog, setOpenDialog] = useState(false);
   const [selectedPedidoId, setSelectedPedidoId] = useState(null);
 
@@ -257,7 +261,11 @@ const DespachosScreen = () => {
       selectedDate === orderDate;
     const isMonthMatch =
       new Date(pedido.fecha_hora).getMonth() + 1 === selectedMonth;
-    return isDateMatch && isMonthMatch && pedido.estado === selectedEstado;
+    const isEstadoMatch = pedido.estado === selectedEstado;
+    const isNameMatch = pedido.nombre_completo
+      .toLowerCase()
+      .includes(searchName.toLowerCase());
+    return isDateMatch && isMonthMatch && isEstadoMatch && isNameMatch;
   });
 
   // Función para manejar la apertura del diálogo de resumen de productos
@@ -360,7 +368,11 @@ const DespachosScreen = () => {
             variant="contained"
             color="primary"
             onClick={handleOpenProductSummaryDialog}
-            sx={{backgroundColor: '#5E55FE', borderRadius: '16px', '&:hover': { backgroundColor: '#7b45a1' }}}
+            sx={{
+              backgroundColor: '#5E55FE',
+              borderRadius: '16px',
+              '&:hover': { backgroundColor: '#7b45a1' },
+            }}
           >
             Resumen de Productos
           </Button>
@@ -369,7 +381,11 @@ const DespachosScreen = () => {
             color="secondary"
             onClick={handleOpenDeliveryDialog}
             startIcon={<WhatsAppIcon />}
-            sx={{backgroundColor: '#00AC47', borderRadius: '16px', '&:hover': { backgroundColor: '#007831' }}}
+            sx={{
+              backgroundColor: '#00AC47',
+              borderRadius: '16px',
+              '&:hover': { backgroundColor: '#007831' },
+            }}
           >
             Reporte de Envios
           </Button>
@@ -429,6 +445,23 @@ const DespachosScreen = () => {
             <MenuItem value="Pedido Enviado">Pedido Enviado</MenuItem>
           </Select>
         </FormControl>
+        {/* Barra de Búsqueda */}
+        <TextField
+          label="Buscar por Nombre"
+          value={searchName}
+          onChange={(e) => setSearchName(e.target.value)}
+          sx={{
+            minWidth: { xs: '100%', sm: 200 },
+          }}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <SearchIcon color="action" />
+              </InputAdornment>
+            ),
+          }}
+          variant="outlined"
+        />
       </Stack>
 
       {/* Grid de Pedidos */}
@@ -510,10 +543,7 @@ const DespachosScreen = () => {
               Notificar al Cliente
             </Typography>
           </Box>
-          <IconButton
-            onClick={handleCancelDialog}
-            sx={{ color: 'grey.500' }}
-          >
+          <IconButton onClick={handleCancelDialog} sx={{ color: 'grey.500' }}>
             <CloseIcon />
           </IconButton>
         </DialogTitle>
