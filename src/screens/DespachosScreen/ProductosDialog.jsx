@@ -12,6 +12,7 @@ import {
 import WineBarIcon from '@mui/icons-material/WineBar';
 import HomeIcon from '@mui/icons-material/Home';
 import PhoneIcon from '@mui/icons-material/Phone';
+import PersonIcon from '@mui/icons-material/Person'; // Ícono para el nombre del cliente
 
 const ProductosDialog = ({
   open,
@@ -39,15 +40,21 @@ const ProductosDialog = ({
       {/* Información del Cliente */}
       <Box sx={{ mb: 2 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-          <HomeIcon sx={{ mr: 1, color: 'primary.main' }} />
+          <PersonIcon sx={{ mr: 1, color: '#E54E46' }} />
           <Typography variant="body1">
-            <strong>Dirección:</strong> {direccionContent.direccion}
+            <strong>{direccionContent.nombreCliente}</strong> 
+          </Typography>
+        </Box>
+        <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+          <HomeIcon sx={{ mr: 1, color: '#33A852' }} />
+          <Typography variant="body1">
+            <strong>{direccionContent.direccion}</strong> 
           </Typography>
         </Box>
         <Box sx={{ display: 'flex', alignItems: 'center' }}>
-          <PhoneIcon sx={{ mr: 1, color: 'primary.main' }} />
+          <PhoneIcon sx={{ mr: 1, color: '#FBBC04' }} />
           <Typography variant="body1">
-            <strong>Teléfono:</strong> {direccionContent.telefono}
+            <strong>{direccionContent.telefono}</strong> 
           </Typography>
         </Box>
       </Box>

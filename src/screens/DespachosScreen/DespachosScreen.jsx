@@ -220,6 +220,7 @@ const DespachosScreen = () => {
       direccion: pedido.direccion,
       detalles: pedido.detalles_direccion,
       telefono: pedido.numero_telefono,
+      nombreCliente: pedido.nombre_completo,
     });
 
     // Preparar contenido de productos
